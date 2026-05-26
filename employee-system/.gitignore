@@ -1,45 +1,57 @@
-# Dependencies
-node_modules/
-target/
+# ===========================================
+# 员工管理系统 - Git 忽略规则
+# ===========================================
 
-# IDE
+# ---- 前端依赖 ----
+node_modules/
+
+# ---- Java/Maven 编译输出 ----
+target/
+*.class
+*.jar
+*.war
+*.ear
+
+# ---- IDE 配置 ----
 .idea/
 .vscode/
 *.iml
+*.iws
+*.ipr
+out/
 
-# Build output
+# ---- 构建产物 ----
 dist/
 build/
-*.jar
-*.war
-*.class
-
-# Environment files
-.env
-.env.local
-.env.*.local
-
-# Logs
-logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# OS files
+# ---- 环境变量 ----
+.env
+.env.local
+.env.*.local
+.env.production
+
+# ---- 操作系统文件 ----
 .DS_Store
 Thumbs.db
+Desktop.ini
 
-# Temp files
+# ---- 临时文件 ----
 *.tmp
 *.temp
 *.swp
 *~
+~*
 
-# Coverage
+# ---- 测试覆盖率 ----
 coverage/
 .nyc_output/
+*.lcov
 
-# Cache
+# ---- 缓存 ----
 .cache/
 .parcel-cache/
+.eslintcache
