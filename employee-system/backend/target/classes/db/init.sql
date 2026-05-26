@@ -32,4 +32,18 @@ INSERT INTO `employee` (`name`, `age`, `gender`, `phone`, `email`, `department`,
 ('周九', 27, '女', '13800138007', 'zhoujiu@example.com', '销售部', '销售代表', '2022-02-18', 0),
 ('吴十', 33, '男', '13800138008', 'wushi@example.com', '销售部', '销售经理', '2019-08-05', 0),
 ('郑十一', 31, '女', '13800138009', 'zhengshiyi@example.com', '市场部', '市场经理', '2020-04-22', 0),
-('王十二', 36, '男', '13800138010', 'wangshier@example.com', '技术部', '架构师', '2017-06-30', 0); 
+('王十二', 36, '男', '13800138010', 'wangshier@example.com', '技术部', '架构师', '2017-06-30', 0);
+
+-- 创建用户表
+CREATE TABLE IF NOT EXISTS `user` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '用户ID',
+  `username` varchar(50) NOT NULL COMMENT '用户名',
+  `password` varchar(100) NOT NULL COMMENT '密码',
+  `real_name` varchar(50) DEFAULT NULL COMMENT '真实姓名',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_username` (`username`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户表';
+
+-- 插入测试用户（密码是 admin123，使用BCrypt加密）
+INSERT INTO `user` (`username`, `password`, `real_name`) VALUES
+('admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', '系统管理员'); 

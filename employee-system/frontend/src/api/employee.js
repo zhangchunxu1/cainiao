@@ -36,7 +36,10 @@ export const deleteEmployee = (id) => {
 // 请求拦截器
 api.interceptors.request.use(
   config => {
-    // 可以在这里添加认证token等
+    const token = localStorage.getItem('token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
     return config
   },
   error => Promise.reject(error)

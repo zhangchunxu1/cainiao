@@ -1,11 +1,25 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '../store/auth'
 
 const routes = [
   {
+    path: '/login',
+    name: 'login',
+    component: () => import('../views/Login.vue'),
+    meta: { title: '登录', requiresAuth: false }
+  },
+  {
     path: '/',
     component: () => import('../views/Layout.vue'),
-    redirect: '/employees',
+    redirect: '/dashboard',
+    meta: { requiresAuth: true },
     children: [
+      {
+        path: '/dashboard',
+        name: 'dashboard',
+        component: () => import('../views/Dashboard.vue'),
+        meta: { title: '首页' }
+      },
       {
         path: '/employees',
         name: 'employees',
@@ -38,4 +52,16 @@ const router = createRouter({
   routes
 })
 
-export default router 
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore()
+  
+  if (to.meta.requiresAuth !== false && !authStore.isLoggedIn) {
+    next('/login')
+  } else if (to.path === '/login' && authStore.isLoggedIn) {
+    next('/dashboard')
+  } else {
+    next()
+  }
+})
+
+export default router
