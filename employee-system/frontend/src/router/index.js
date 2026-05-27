@@ -37,6 +37,30 @@ const routes = [
         name: 'employee-edit',
         component: () => import('../views/employees/EmployeeForm.vue'),
         meta: { title: '编辑员工' }
+      },
+      {
+        path: '/departments',
+        name: 'departments',
+        component: () => import('../views/departments/DepartmentList.vue'),
+        meta: { title: '部门管理' }
+      },
+      {
+        path: '/attendance',
+        name: 'attendance',
+        component: () => import('../views/attendance/AttendanceList.vue'),
+        meta: { title: '考勤管理' }
+      },
+      {
+        path: '/announcements',
+        name: 'announcements',
+        component: () => import('../views/announcements/AnnouncementList.vue'),
+        meta: { title: '公告通知' }
+      },
+      {
+        path: '/leaves',
+        name: 'leaves',
+        component: () => import('../views/leaves/LeaveList.vue'),
+        meta: { title: '请假管理' }
       }
     ]
   },

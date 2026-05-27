@@ -25,14 +25,55 @@
           <DashboardOutlined />
           <span>首页概览</span>
         </a-menu-item>
-        <a-menu-item key="employees" @click="$router.push('/employees')">
-          <UnorderedListOutlined />
-          <span>员工列表</span>
-        </a-menu-item>
-        <a-menu-item key="add" @click="$router.push('/employees/add')">
-          <UserAddOutlined />
-          <span>添加员工</span>
-        </a-menu-item>
+
+        <a-sub-menu key="emp-sub">
+          <template #icon><UserOutlined /></template>
+          <template #title>员工管理</template>
+          <a-menu-item key="employees" @click="$router.push('/employees')">
+            <UnorderedListOutlined />
+            <span>员工列表</span>
+          </a-menu-item>
+          <a-menu-item key="add" @click="$router.push('/employees/add')">
+            <UserAddOutlined />
+            <span>添加员工</span>
+          </a-menu-item>
+        </a-sub-menu>
+
+        <a-sub-menu key="dept-sub">
+          <template #icon><ApartmentOutlined /></template>
+          <template #title>部门管理</template>
+          <a-menu-item key="departments" @click="$router.push('/departments')">
+            <TeamOutlined />
+            <span>部门列表</span>
+          </a-menu-item>
+        </a-sub-menu>
+
+        <a-sub-menu key="att-sub">
+          <template #icon><ClockCircleOutlined /></template>
+          <template #title>考勤管理</template>
+          <a-menu-item key="attendance" @click="$router.push('/attendance')">
+            <ScheduleOutlined />
+            <span>考勤记录</span>
+          </a-menu-item>
+        </a-sub-menu>
+
+        <a-sub-menu key="notice-sub">
+          <template #icon><NotificationOutlined /></template>
+          <template #title>公告通知</template>
+          <a-menu-item key="announcements" @click="$router.push('/announcements')">
+            <BellOutlined />
+            <span>公告列表</span>
+          </a-menu-item>
+        </a-sub-menu>
+
+        <a-sub-menu key="leave-sub">
+          <template #icon><CalendarOutlined /></template>
+          <template #title>请假管理</template>
+          <a-menu-item key="leaves" @click="$router.push('/leaves')">
+            <FormOutlined />
+            <span>请假申请</span>
+          </a-menu-item>
+        </a-sub-menu>
       </a-menu>
 
       <div class="sider-footer" v-if="!collapsed">
@@ -119,7 +160,15 @@ import {
   LogoutOutlined,
   HomeOutlined,
   MenuFoldOutlined,
-  MenuUnfoldOutlined
+  MenuUnfoldOutlined,
+  UserOutlined,
+  ApartmentOutlined,
+  ClockCircleOutlined,
+  ScheduleOutlined,
+  NotificationOutlined,
+  BellOutlined,
+  CalendarOutlined,
+  FormOutlined
 } from '@ant-design/icons-vue';
 
 const route = useRoute();
@@ -140,7 +189,22 @@ const selectedKeys = computed(() => {
   if (path.includes('/employees/edit')) {
     return ['employees'];
   }
-  return ['employees'];
+  if (path.startsWith('/employees')) {
+    return ['employees'];
+  }
+  if (path.startsWith('/departments')) {
+    return ['departments'];
+  }
+  if (path.startsWith('/attendance')) {
+    return ['attendance'];
+  }
+  if (path.startsWith('/announcements')) {
+    return ['announcements'];
+  }
+  if (path.startsWith('/leaves')) {
+    return ['leaves'];
+  }
+  return ['dashboard'];
 });
 
 const handleLogout = () => {
