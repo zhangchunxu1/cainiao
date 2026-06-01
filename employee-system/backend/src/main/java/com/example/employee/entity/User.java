@@ -31,4 +31,7 @@ public class User implements Serializable {
 
     @ApiModelProperty(value = "真实姓名")
     private String realName;
+
+    @ApiModelProperty(value = "角色：admin-管理员，employee-普通员工")
+    private String role;
 }

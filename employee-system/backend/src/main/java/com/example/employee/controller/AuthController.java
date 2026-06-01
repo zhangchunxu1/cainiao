@@ -175,83 +175,20 @@ public class AuthController {
         Content-Type: application/json
         Body: {"username":"admin","password":"admin123"}
     */
-    public Result<Map<String, String>> login(@RequestBody User user) {
-        
+    public Result<Map<String, Object>> login(@RequestBody User user) {
+
         try {
-            /* 
-              调用AuthService执行登录逻辑
-              
-              内部流程：
-              1. 根据username查询数据库获取用户信息
-              2. 使用BCryptPasswordEncoder验证密码
-              3. 如果验证通过，调用JwtUtil生成Token
-              4. 返回Token字符串
-              
-              可能抛出的异常：
-              - UsernameNotFoundException: 用户不存在
-              - BadCredentialsException: 密码错误
-              - 其他业务异常
-            */
-            String token = authService.login(user);
-            
-            /* 
-              构建响应数据
-              
-              HashMap：允许null值的Map实现
-              存储结构：
-                {
-                  "token": "eyJhbGciOiJIUzI1NiJ9..."
-                }
-                
-              为什么用Map而不是直接返回String？
-                - 扩展性好（以后可以添加其他字段）
-                - 符合统一响应格式
-                - 例如以后可以添加：
-                  "expiresIn": "3600"
-                  "tokenType": "Bearer"
-            */
-            Map<String, String> data = new HashMap<>();
-            data.put("token", token);  // 将Token放入Map
-            
-            /* 
-              返回成功响应
-              
-              Result.success(data)内部实现：
-              return Result.builder()
-                  .success(true)
-                  .code(200)
-                  .message("操作成功")
-                  .data(data)
-                  .build();
-                  
-              HTTP状态码：200 OK
-            */
+            Map<String, Object> result = authService.loginWithInfo(user);
+
+            Map<String, Object> data = new HashMap<>();
+            data.put("token", result.get("token"));
+            data.put("role", result.get("role"));
+            data.put("realName", result.get("realName"));
+            data.put("userId", result.get("userId"));
+
             return Result.success(data);
-            
+
         } catch (Exception e) {
-            /* 
-              异常处理：返回错误响应
-              
-              e.getMessage()：获取异常消息
-                - "用户名或密码错误"
-                - "账户已被锁定"
-                - "服务器内部错误"
-                
-              Result.error(message)内部实现：
-              return Result.builder()
-                  .success(false)
-                  .code(500)
-                  .code(e.getMessage())
-                  .data(null)
-                  .build();
-                  
-              HTTP状态码：根据具体异常可能是401/403/500
-              
-              注意事项：
-              - 不要暴露敏感信息（如"密码错误"比"用户xxx的密码不匹配"好）
-              - 应该记录详细的日志用于排查问题
-              - 可以考虑使用全局异常处理器统一处理
-            */
             return Result.error(e.getMessage());
         }
     }

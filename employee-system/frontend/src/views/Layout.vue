@@ -16,7 +16,7 @@
       </div>
 
       <a-menu
-        v-model:selectedKeys="selectedKeys"
+        :selectedKeys="selectedKeys"
         theme="dark"
         mode="inline"
         class="side-menu"
@@ -26,7 +26,7 @@
           <span>首页概览</span>
         </a-menu-item>
 
-        <a-sub-menu key="emp-sub">
+        <a-sub-menu key="emp-sub" v-if="authStore.isAdmin">
           <template #icon><UserOutlined /></template>
           <template #title>员工管理</template>
           <a-menu-item key="employees" @click="$router.push('/employees')">
@@ -39,7 +39,7 @@
           </a-menu-item>
         </a-sub-menu>
 
-        <a-sub-menu key="dept-sub">
+        <a-sub-menu key="dept-sub" v-if="authStore.isAdmin">
           <template #icon><ApartmentOutlined /></template>
           <template #title>部门管理</template>
           <a-menu-item key="departments" @click="$router.push('/departments')">
@@ -72,6 +72,19 @@
           <a-menu-item key="leaves" @click="$router.push('/leaves')">
             <FormOutlined />
             <span>请假申请</span>
+          </a-menu-item>
+        </a-sub-menu>
+
+        <a-sub-menu key="user-sub" v-if="authStore.isAdmin">
+          <template #icon><SafetyCertificateOutlined /></template>
+          <template #title>账号管理</template>
+          <a-menu-item key="users" @click="$router.push('/users')">
+            <TeamOutlined />
+            <span>账号列表</span>
+          </a-menu-item>
+          <a-menu-item key="user-add" @click="$router.push('/users/add')">
+            <UserAddOutlined />
+            <span>添加账号</span>
           </a-menu-item>
         </a-sub-menu>
       </a-menu>
@@ -113,8 +126,8 @@
                         {{ authStore.username ? authStore.username.charAt(0).toUpperCase() : 'U' }}
                     </a-avatar>
               <div class="user-details">
-                <span class="username">{{ authStore.username || '用户' }}</span>
-                <span class="role">管理员</span>
+                <span class="username">{{ authStore.realName || authStore.username || '用户' }}</span>
+                <span class="role">{{ authStore.isAdmin ? '管理员' : '普通员工' }}</span>
               </div>
             </div>
             <a-button type="text" @click="handleLogout" class="logout-btn">
@@ -168,7 +181,8 @@ import {
   NotificationOutlined,
   BellOutlined,
   CalendarOutlined,
-  FormOutlined
+  FormOutlined,
+  SafetyCertificateOutlined
 } from '@ant-design/icons-vue';
 
 const route = useRoute();
@@ -203,6 +217,15 @@ const selectedKeys = computed(() => {
   }
   if (path.startsWith('/leaves')) {
     return ['leaves'];
+  }
+  if (path.includes('/users/add')) {
+    return ['user-add'];
+  }
+  if (path.includes('/users/edit')) {
+    return ['users'];
+  }
+  if (path.startsWith('/users')) {
+    return ['users'];
   }
   return ['dashboard'];
 });

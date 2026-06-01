@@ -40,13 +40,14 @@ CREATE TABLE IF NOT EXISTS `user` (
   `username` varchar(50) NOT NULL COMMENT '用户名',
   `password` varchar(100) NOT NULL COMMENT '密码',
   `real_name` varchar(50) DEFAULT NULL COMMENT '真实姓名',
+  `role` varchar(20) NOT NULL DEFAULT 'employee' COMMENT '角色（admin-管理员，employee-普通员工）',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_username` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户表';
 
 -- 插入测试用户（密码是 admin123，使用BCrypt加密）
-INSERT INTO `user` (`username`, `password`, `real_name`) VALUES
-('admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', '系统管理员');
+INSERT INTO `user` (`username`, `password`, `real_name`, `role`) VALUES
+('admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', '系统管理员', 'admin');
 
 -- 创建部门表
 CREATE TABLE IF NOT EXISTS `department` (
