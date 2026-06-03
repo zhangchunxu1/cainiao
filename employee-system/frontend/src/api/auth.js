@@ -2,10 +2,11 @@ import axios from 'axios'
 import { message } from 'ant-design-vue'
 import router from '../router'
 import { useAuthStore } from '../store/auth'
+import config from '../config'
 
 const api = axios.create({
-  baseURL: '/api',
-  timeout: 10000,
+  baseURL: config.isDev ? '/api' : config.API_BASE_URL,
+  timeout: config.TIMEOUT,
   headers: {
     'Content-Type': 'application/json'
   }
