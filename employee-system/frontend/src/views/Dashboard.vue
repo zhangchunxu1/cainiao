@@ -247,6 +247,52 @@
     </div>
 
     <!-- 
+      日历区域
+      - 展示当月日历
+      - 标注国家法定节假日
+      - 标注当天公告
+    -->
+    <div class="calendar-section">
+      <CalendarWithEvents :announcements="announcements" />
+    </div>
+
+    <!-- 
+      公告区域
+      - 展示最新公告信息
+      - 点击可跳转到公告列表页面
+    -->
+    <div class="announcement-card">
+      <div class="announcement-header">
+        <div class="header-left">
+          <BellOutlined class="icon" />
+          <h3>最新公告</h3>
+        </div>
+        <a href="/announcements" class="view-all">查看全部 →</a>
+      </div>
+      <div class="announcement-list">
+        <div v-if="announcements.length === 0" class="empty-announcement">
+          <FileTextOutlined />
+          <span>暂无公告</span>
+        </div>
+        <a 
+          v-for="item in announcements" 
+          :key="item.id" 
+          :href="`/announcements`"
+          class="announcement-item"
+        >
+          <div class="announcement-dot"></div>
+          <div class="announcement-content">
+            <div class="announcement-title">{{ item.title }}</div>
+            <div class="announcement-meta">
+              <span>{{ item.author }}</span>
+              <span>{{ dayjs(item.createTime).format('MM-DD HH:mm') }}</span>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- 
       快捷操作区域
       - 提供常用功能的快速入口
       - 减少用户点击次数，提升效率
@@ -313,6 +359,9 @@ import { ref, computed, onMounted } from 'vue';
 import { useAuthStore } from '../store/auth';       // 用户认证Store
 import { useEmployeeStore } from '../store/employee'; // 员工数据Store
 
+// 导入API
+import { announcementApi } from '../api/announcement';
+
 // 导入dayjs日期处理库，用于格式化日期
 import dayjs from 'dayjs';
 
@@ -330,8 +379,11 @@ import {
   UserAddOutlined,       // 添加用户图标 - 用于添加员工按钮
   UnorderedListOutlined, // 列表图标 - 用于查看列表按钮
   ReloadOutlined,        // 刷新图标 - 用于刷新按钮
-  CaretUpOutlined        // 上箭头图标 - 用于趋势指示
+  CaretUpOutlined,       // 上箭头图标 - 用于趋势指示
+  BellOutlined,          // 铃铛图标 - 用于公告
+  FileTextOutlined       // 文档图标 - 用于公告内容
 } from '@ant-design/icons-vue';
+import CalendarWithEvents from '../components/CalendarWithEvents.vue';
 
 // 实例化Store对象，用于访问全局状态
 const authStore = useAuthStore();      // 认证状态：包含username、token等
@@ -340,6 +392,9 @@ const employeeStore = useEmployeeStore(); // 员工状态：包含employees列�
 // 定义计算属性：获取加载状态
 // 当employeeStore.loading变化时自动更新
 const loading = computed(() => employeeStore.loading);
+
+// 公告数据
+const announcements = ref([]);
 
 // 使用dayjs格式化当前日期
 // 输出格式示例：2026年05月26日 星期二
@@ -466,9 +521,26 @@ const fetchData = async () => {
       page: 1,
       pageSize: 100
     });
+    // 获取公告数据
+    await fetchAnnouncements();
   } catch (error) {
     // 错误处理：打印错误日志
     console.error('获取数据失败');
+  }
+};
+
+/* ===================================================
+   获取公告数据
+================================================== */
+const fetchAnnouncements = async () => {
+  try {
+    const response = await announcementApi.getAnnouncementList({
+      page: 1,
+      pageSize: 5
+    });
+    announcements.value = response.data.data?.records || [];
+  } catch (error) {
+    console.error('获取公告失败', error);
   }
 };
 </script>
@@ -938,6 +1010,122 @@ const fetchData = async () => {
 
 .dept-numbers small {
   font-size: 9px;               /* 很小的字号 */
+  color: #8c8c8c;
+}
+
+/* ====== 日历区域 ====== */
+.calendar-section {
+  margin-bottom: 12px;
+}
+
+/* ====== 公告区域 ====== */
+.announcement-card {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+  padding: 14px 20px;
+  margin-bottom: 12px;
+}
+
+.announcement-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.announcement-header .header-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.announcement-header .icon {
+  font-size: 20px;
+  color: #faad14;
+}
+
+.announcement-header h3 {
+  margin: 0 !important;
+  font-size: 15px;
+  font-weight: 600;
+  color: #262626;
+}
+
+.view-all {
+  font-size: 12px;
+  color: #1890ff;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.view-all:hover {
+  color: #40a9ff;
+}
+
+.announcement-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.empty-announcement {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 20px 0;
+  color: #bfbfbf;
+  font-size: 13px;
+}
+
+.empty-announcement .anticon {
+  font-size: 16px;
+}
+
+.announcement-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  transition: all 0.3s;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.announcement-item:hover {
+  background: #f6f7f8;
+}
+
+.announcement-dot {
+  width: 6px;
+  height: 6px;
+  background: #1890ff;
+  border-radius: 50%;
+  margin-top: 7px;
+  flex-shrink: 0;
+}
+
+.announcement-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.announcement-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #262626;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 3px;
+}
+
+.announcement-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 11px;
   color: #8c8c8c;
 }
 

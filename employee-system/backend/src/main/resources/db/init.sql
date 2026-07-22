@@ -13,26 +13,28 @@ CREATE TABLE IF NOT EXISTS `employee` (
   `email` varchar(100) NOT NULL COMMENT '邮箱',
   `department` varchar(50) NOT NULL COMMENT '部门',
   `position` varchar(50) NOT NULL COMMENT '职位',
+  `manager_id` bigint(20) DEFAULT NULL COMMENT '直属上级ID',
   `hire_date` varchar(20) NOT NULL COMMENT '入职日期',
   `deleted` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否删除(0-未删除，1-已删除)',
   PRIMARY KEY (`id`),
   INDEX `idx_name` (`name`),
   INDEX `idx_department` (`department`),
-  INDEX `idx_position` (`position`)
+  INDEX `idx_position` (`position`),
+  INDEX `idx_manager_id` (`manager_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='员工表';
 
 -- 插入测试数据
-INSERT INTO `employee` (`name`, `age`, `gender`, `phone`, `email`, `department`, `position`, `hire_date`, `deleted`) VALUES
-('张三', 28, '男', '13800138001', 'zhangsan@example.com', '技术部', '前端开发工程师', '2020-01-15', 0),
-('李四', 32, '男', '13800138002', 'lisi@example.com', '技术部', '后端开发工程师', '2019-05-20', 0),
-('王五', 35, '男', '13800138003', 'wangwu@example.com', '技术部', '技术经理', '2018-03-10', 0),
-('赵六', 26, '女', '13800138004', 'zhaoliu@example.com', '市场部', '市场专员', '2021-07-01', 0),
-('钱七', 29, '女', '13800138005', 'qianqi@example.com', '人事部', '人事专员', '2020-09-15', 0),
-('孙八', 40, '男', '13800138006', 'sunba@example.com', '财务部', '财务经理', '2015-11-01', 0),
-('周九', 27, '女', '13800138007', 'zhoujiu@example.com', '销售部', '销售代表', '2022-02-18', 0),
-('吴十', 33, '男', '13800138008', 'wushi@example.com', '销售部', '销售经理', '2019-08-05', 0),
-('郑十一', 31, '女', '13800138009', 'zhengshiyi@example.com', '市场部', '市场经理', '2020-04-22', 0),
-('王十二', 36, '男', '13800138010', 'wangshier@example.com', '技术部', '架构师', '2017-06-30', 0);
+INSERT INTO `employee` (`name`, `age`, `gender`, `phone`, `email`, `department`, `position`, `manager_id`, `hire_date`, `deleted`) VALUES
+('张三', 28, '男', '13800138001', 'zhangsan@example.com', '技术部', '前端开发工程师', 3, '2020-01-15', 0),
+('李四', 32, '男', '13800138002', 'lisi@example.com', '技术部', '后端开发工程师', 3, '2019-05-20', 0),
+('王五', 35, '男', '13800138003', 'wangwu@example.com', '技术部', '技术经理', NULL, '2018-03-10', 0),
+('赵六', 26, '女', '13800138004', 'zhaoliu@example.com', '市场部', '市场专员', 9, '2021-07-01', 0),
+('钱七', 29, '女', '13800138005', 'qianqi@example.com', '人事部', '人事经理', NULL, '2020-09-15', 0),
+('孙八', 40, '男', '13800138006', 'sunba@example.com', '财务部', '财务经理', NULL, '2015-11-01', 0),
+('周九', 27, '女', '13800138007', 'zhoujiu@example.com', '销售部', '销售代表', 8, '2022-02-18', 0),
+('吴十', 33, '男', '13800138008', 'wushi@example.com', '销售部', '销售经理', NULL, '2019-08-05', 0),
+('郑十一', 31, '女', '13800138009', 'zhengshiyi@example.com', '市场部', '市场经理', NULL, '2020-04-22', 0),
+('王十二', 36, '男', '13800138010', 'wangshier@example.com', '技术部', '架构师', 3, '2017-06-30', 0);
 
 -- 创建用户表
 CREATE TABLE IF NOT EXISTS `user` (
@@ -142,3 +144,30 @@ INSERT INTO `leave_request` (`employee_id`, `employee_name`, `department`, `leav
 (1, '张三', '技术部', '事假', DATE_ADD(CURDATE(), INTERVAL 5 DAY), DATE_ADD(CURDATE(), INTERVAL 6 DAY), 2, '家中有急事需要处理', '已批准', '王五', '同意', NOW()),
 (2, '李四', '技术部', '病假', DATE_ADD(CURDATE(), INTERVAL 2 DAY), DATE_ADD(CURDATE(), INTERVAL 3 DAY), 2, '身体不适，需去医院检查', '待审批', NULL, NULL, NULL),
 (4, '赵六', '市场部', '年假', DATE_SUB(CURDATE(), INTERVAL 3 DAY), DATE_SUB(CURDATE(), INTERVAL 1 DAY), 3, '计划外出旅游', '已批准', '郑十一', '批准休假', DATE_SUB(NOW(), INTERVAL 5 DAY));
+
+-- 创建日报表
+CREATE TABLE IF NOT EXISTS `daily_report` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '日报ID',
+  `employee_id` bigint(20) NOT NULL COMMENT '员工ID',
+  `employee_name` varchar(50) NOT NULL COMMENT '员工姓名',
+  `department` varchar(50) DEFAULT NULL COMMENT '部门',
+  `report_date` date NOT NULL COMMENT '日报日期',
+  `today_work` text NOT NULL COMMENT '今日工作内容',
+  `tomorrow_work` text DEFAULT NULL COMMENT '明日工作计划',
+  `issues` text DEFAULT NULL COMMENT '问题与困难',
+  `status` varchar(20) DEFAULT '已提交' COMMENT '状态（已提交、已审核）',
+  `reviewer` varchar(50) DEFAULT NULL COMMENT '审核人',
+  `review_comment` varchar(500) DEFAULT NULL COMMENT '审核意见',
+  `review_time` datetime DEFAULT NULL COMMENT '审核时间',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  INDEX `idx_employee_id` (`employee_id`),
+  INDEX `idx_report_date` (`report_date`),
+  INDEX `idx_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='日报表';
+
+-- 插入日报测试数据
+INSERT INTO `daily_report` (`employee_id`, `employee_name`, `department`, `report_date`, `today_work`, `tomorrow_work`, `issues`, `status`, `reviewer`, `review_comment`, `review_time`) VALUES
+(1, '张三', '技术部', CURDATE(), '完成用户管理模块前端页面开发，修复了登录页面样式问题', '继续开发员工管理模块，完成列表和详情页面', '暂无', '已提交', NULL, NULL, NULL),
+(2, '李四', '技术部', CURDATE(), '完成请假审批接口开发，编写单元测试', '开发考勤统计接口，优化数据库查询性能', '请假审批流程需要确认', '已审核', '王五', '继续加油，注意代码规范', NOW()),
+(1, '张三', '技术部', DATE_SUB(CURDATE(), INTERVAL 1 DAY), '完成系统登录功能开发，集成JWT认证', '开发用户管理模块前端页面', 'JWT Token过期时间需要调整', '已审核', '王五', '做得不错', DATE_SUB(NOW(), INTERVAL 1 DAY));

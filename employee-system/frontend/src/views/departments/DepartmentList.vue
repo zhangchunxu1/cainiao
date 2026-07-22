@@ -27,11 +27,7 @@
             allowClear
             size="large"
             @pressEnter="handleSearch"
-          >
-            <template #prefix>
-              <SearchOutlined style="color: #bfbfbf;" />
-            </template>
-          </a-input>
+          />
         </a-form-item>
         <a-form-item>
           <a-button type="primary" @click="handleSearch" size="large">
@@ -64,24 +60,27 @@
         :loading="loading"
         rowKey="id"
         :pagination="false"
+        :scroll="{ x: 900 }"
       >
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'action'">
-            <a-space>
-              <a-button type="link" @click="handleEdit(record)">
-                <EditOutlined /> 编辑
-              </a-button>
-              <a-popconfirm
-                title="确定要删除这个部门吗？"
-                ok-text="确定"
-                cancel-text="取消"
-                @confirm="handleDelete(record)"
-              >
-                <a-button type="link" danger>
-                  <DeleteOutlined /> 删除
+            <div style="display: flex; align-items: center; justify-content: center;">
+              <a-space>
+                <a-button type="link" @click="handleEdit(record)">
+                  <EditOutlined /> 编辑
                 </a-button>
-              </a-popconfirm>
-            </a-space>
+                <a-popconfirm
+                  title="确定要删除这个部门吗？"
+                  ok-text="确定"
+                  cancel-text="取消"
+                  @confirm="handleDelete(record)"
+                >
+                  <a-button type="link" danger>
+                    <DeleteOutlined /> 删除
+                  </a-button>
+                </a-popconfirm>
+              </a-space>
+            </div>
           </template>
           <template v-else-if="column.key === 'status'">
             <a-tag :color="record.status === 0 ? 'green' : 'red'">
@@ -212,12 +211,14 @@ const columns = [
   {
     title: '负责人',
     dataIndex: 'manager',
-    key: 'manager'
+    key: 'manager',
+    ellipsis: true
   },
   {
     title: '联系电话',
     dataIndex: 'phone',
-    key: 'phone'
+    key: 'phone',
+    ellipsis: true
   },
   {
     title: '员工人数',
@@ -241,7 +242,8 @@ const columns = [
     title: '操作',
     key: 'action',
     align: 'center',
-    width: 200
+    width: 200,
+    fixed: 'right'
   }
 ]
 

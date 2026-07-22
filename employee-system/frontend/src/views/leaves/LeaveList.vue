@@ -66,11 +66,7 @@
             allowClear
             size="large"
             @pressEnter="handleSearch"
-          >
-            <template #prefix>
-              <SearchOutlined style="color: #bfbfbf;" />
-            </template>
-          </a-input>
+          />
         </a-form-item>
         <a-form-item label="状态：">
           <a-select
@@ -117,6 +113,7 @@
         :loading="loading"
         rowKey="id"
         :pagination="false"
+        :scroll="{ x: 1100 }"
       >
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'status'">
@@ -128,14 +125,15 @@
             <a-tag color="processing">{{ record.leaveType }}</a-tag>
           </template>
           <template v-else-if="column.key === 'action'">
-            <a-space>
-              <a-tooltip title="查看详情">
+            <div style="display: flex; align-items: center; justify-content: center;">
+              <a-space>
+                <a-tooltip title="查看详情">
                 <a-button type="link" @click="handleViewDetail(record)">
                   <EyeOutlined />
                 </a-button>
               </a-tooltip>
 
-              <template v-if="record.status === '待审批'">
+              <template v-if="record.status === '待审批' && record.employeeName !== authStore.realName">
                 <a-popconfirm
                   title="确定批准此请假申请吗？"
                   ok-text="确定"
@@ -159,17 +157,20 @@
                 </a-popconfirm>
               </template>
 
-              <a-popconfirm
-                title="确定要删除这条记录吗？"
-                ok-text="确定"
-                cancel-text="取消"
-                @confirm="handleDelete(record)"
-              >
-                <a-button type="link" danger>
-                  <DeleteOutlined /> 删除
-                </a-button>
-              </a-popconfirm>
-            </a-space>
+              <template v-if="authStore.isAdmin || record.employeeId === authStore.userId">
+                <a-popconfirm
+                  title="确定要删除这条记录吗？"
+                  ok-text="确定"
+                  cancel-text="取消"
+                  @confirm="handleDelete(record)"
+                >
+                  <a-button type="link" danger>
+                    <DeleteOutlined /> 删除
+                  </a-button>
+                </a-popconfirm>
+              </template>
+              </a-space>
+            </div>
           </template>
         </template>
       </a-table>
@@ -323,12 +324,14 @@ import {
   DeleteOutlined
 } from '@ant-design/icons-vue'
 import { leaveRequestApi } from '../../api/leave'
+import { useAuthStore } from '../../store/auth'
 
 const loading = ref(false)
 const submitLoading = ref(false)
 const modalVisible = ref(false)
 const detailVisible = ref(false)
 const isEdit = ref(false)
+const authStore = useAuthStore()
 
 const searchKeyword = ref('')
 const selectedStatus = ref(undefined)
@@ -346,9 +349,9 @@ const stats = reactive({
 
 const formRef = ref()
 const formData = reactive({
-  employeeId: 1,
-  employeeName: '张三',
-  department: '技术部',
+  employeeId: authStore.userId,
+  employeeName: authStore.realName || authStore.username,
+  department: authStore.department,
   leaveType: '',
   startDate: '',
   endDate: '',
@@ -370,27 +373,32 @@ const columns = [
   {
     title: '员工姓名',
     dataIndex: 'employeeName',
-    key: 'employeeName'
+    key: 'employeeName',
+    ellipsis: true
   },
   {
     title: '部门',
     dataIndex: 'department',
-    key: 'department'
+    key: 'department',
+    ellipsis: true
   },
   {
     title: '请假类型',
     dataIndex: 'leaveType',
-    key: 'leaveType'
+    key: 'leaveType',
+    ellipsis: true
   },
   {
     title: '开始日期',
     dataIndex: 'startDate',
-    key: 'startDate'
+    key: 'startDate',
+    ellipsis: true
   },
   {
     title: '结束日期',
     dataIndex: 'endDate',
-    key: 'endDate'
+    key: 'endDate',
+    ellipsis: true
   },
   {
     title: '天数',
@@ -408,7 +416,8 @@ const columns = [
     title: '操作',
     key: 'action',
     align: 'center',
-    width: 280
+    width: 280,
+    fixed: 'right'
   }
 ]
 
@@ -479,9 +488,9 @@ const handleSizeChange = (current, size) => {
 
 const showAddModal = () => {
   Object.assign(formData, {
-    employeeId: 1,
-    employeeName: '张三',
-    department: '技术部',
+    employeeId: authStore.userId,
+    employeeName: authStore.realName || authStore.username,
+    department: authStore.department,
     leaveType: '',
     startDate: '',
     endDate: '',

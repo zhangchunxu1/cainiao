@@ -18,6 +18,10 @@
           <LogoutOutlined />
           签退
         </a-button>
+        <a-button v-if="authStore.isAdmin" danger size="large" @click="handleClearAll">
+          <DeleteOutlined />
+          清空数据
+        </a-button>
       </div>
     </div>
 
@@ -70,11 +74,7 @@
             allowClear
             size="large"
             @pressEnter="handleSearch"
-          >
-            <template #prefix>
-              <SearchOutlined style="color: #bfbfbf;" />
-            </template>
-          </a-input>
+          />
         </a-form-item>
         <a-form-item label="日期范围：">
           <a-range-picker
@@ -115,6 +115,7 @@
         :loading="loading"
         rowKey="id"
         :pagination="false"
+        :scroll="{ x: 900 }"
       >
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'status'">
@@ -155,9 +156,11 @@ import {
   LoginOutlined,
   LogoutOutlined,
   SearchOutlined,
-  ReloadOutlined
+  ReloadOutlined,
+  DeleteOutlined
 } from '@ant-design/icons-vue'
 import { attendanceApi } from '../../api/attendance'
+import { useAuthStore } from '../../store/auth'
 
 const loading = ref(false)
 const checkInLoading = ref(false)
@@ -174,6 +177,8 @@ const currentTime = ref('')
 const todayCheckIn = ref('')
 const todayCheckOut = ref('')
 let timeInterval = null
+
+const authStore = useAuthStore()
 
 const columns = [
   {
@@ -274,8 +279,8 @@ const handleCheckIn = async () => {
   checkInLoading.value = true
   try {
     const res = await attendanceApi.checkIn({
-      employeeId: 1,
-      employeeName: '张三'
+      employeeId: authStore.userId,
+      employeeName: authStore.realName
     })
     message.success('签到成功')
     fetchAttendance()
@@ -290,7 +295,7 @@ const handleCheckOut = async () => {
   checkOutLoading.value = true
   try {
     const res = await attendanceApi.checkOut({
-      employeeId: 1
+      employeeId: authStore.userId
     })
     message.success('签退成功')
     fetchAttendance()
@@ -298,6 +303,19 @@ const handleCheckOut = async () => {
     message.error(error.message || '签退失败')
   } finally {
     checkOutLoading.value = false
+  }
+}
+
+const handleClearAll = async () => {
+  const confirm = await window.confirm('确定要清空所有考勤数据吗？此操作不可恢复！')
+  if (!confirm) return
+  
+  try {
+    await attendanceApi.clearAll()
+    message.success('考勤数据已清空')
+    fetchAttendance()
+  } catch (error) {
+    message.error(error.message || '清空失败')
   }
 }
 

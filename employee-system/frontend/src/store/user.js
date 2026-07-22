@@ -20,7 +20,14 @@ export const useUserStore = defineStore('userManage', {
       try {
         const res = await userApi.getUserList(params)
         if (res.data.success && res.data.code === 200) {
-          this.users = res.data.data
+          const data = res.data.data
+          this.users = {
+            records: data.records || [],
+            total: data.total || 0,
+            size: this.users.size,
+            current: data.current || this.users.current,
+            pages: data.pages || 1
+          }
         } else {
           throw new Error(res.data.message || '获取数据失败')
         }

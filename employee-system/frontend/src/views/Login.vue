@@ -41,27 +41,34 @@
             class="login-form"
           >
             <a-form-item name="username" label="用户名">
-              <a-input
-                v-model:value="formState.username"
-                placeholder="请输入用户名"
-                size="large"
-              >
-                <template #prefix>
-                  <UserOutlined style="color: #1890ff;" />
-                </template>
-              </a-input>
+              <div class="custom-input-wrapper">
+                <UserOutlined class="input-icon" />
+                <input
+                  v-model="formState.username"
+                  placeholder="请输入用户名"
+                  class="custom-input"
+                />
+              </div>
             </a-form-item>
 
             <a-form-item name="password" label="密码">
-              <a-input-password
-                v-model:value="formState.password"
-                placeholder="请输入密码"
-                size="large"
-              >
-                <template #prefix>
-                  <LockOutlined style="color: #1890ff;" />
-                </template>
-              </a-input-password>
+              <div class="custom-input-wrapper">
+                <LockOutlined class="input-icon" />
+                <input
+                  v-model="formState.password"
+                  :type="showPassword ? 'text' : 'password'"
+                  placeholder="请输入密码"
+                  class="custom-input"
+                />
+                <span 
+                  class="password-toggle" 
+                  @click="showPassword = !showPassword"
+                  style="cursor: pointer; color: #999;"
+                >
+                  <EyeOutlined v-if="!showPassword" />
+                  <EyeInvisibleOutlined v-else />
+                </span>
+              </div>
             </a-form-item>
 
             <a-form-item>
@@ -95,12 +102,13 @@
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { message } from 'ant-design-vue'
-import { UserOutlined, LockOutlined, TeamOutlined, CheckCircleOutlined } from '@ant-design/icons-vue'
+import { UserOutlined, LockOutlined, TeamOutlined, CheckCircleOutlined, EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons-vue'
 import { useAuthStore } from '../store/auth'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const loading = ref(false)
+const showPassword = ref(false)
 
 const formState = reactive({
   username: '',
@@ -129,7 +137,7 @@ const handleLogin = async () => {
           marginTop: '20vh'
         }
       })
-      router.push('/employees')
+      router.push('/dashboard')
     }
   } catch (error) {
     message.error(error.message || '登录失败')
@@ -326,18 +334,38 @@ const handleLogin = async () => {
   color: #595959;
 }
 
-.login-form :deep(.ant-input),
-.login-form :deep(.ant-input-password) {
+.custom-input-wrapper {
+  display: flex;
+  align-items: center;
   border-radius: 8px;
-  border: 2px solid #f0f0f0;
+  border: 1px solid #d9d9d9;
+  padding: 0 12px;
+  background: #fff;
   transition: all 0.3s;
 }
 
-.login-form :deep(.ant-input:focus),
-.login-form :deep(.ant-input-password:focus),
-.login-form :deep(.ant-input-affix-wrapper-focused) {
+.custom-input-wrapper:focus-within {
   border-color: #1890ff;
-  box-shadow: 0 0 0 3px rgba(24, 144, 255, 0.1);
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+}
+
+.input-icon {
+  font-size: 16px;
+  color: #1890ff;
+  margin-right: 8px;
+}
+
+.custom-input {
+  flex: 1;
+  height: 40px;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  background: transparent;
+}
+
+.custom-input::placeholder {
+  color: #bfbfbf;
 }
 
 .login-button {

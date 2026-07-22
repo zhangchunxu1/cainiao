@@ -28,11 +28,7 @@
             size="large"
             class="search-input"
             @pressEnter="handleSearch"
-          >
-            <template #prefix>
-              <SearchOutlined style="color: #bfbfbf;" />
-            </template>
-          </a-input>
+          />
         </a-form-item>
         <a-form-item>
           <a-button type="primary" @click="handleSearch" size="large" class="search-button">
@@ -80,7 +76,8 @@
       >
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'action'">
-            <a-space>
+            <div style="display: flex; align-items: center; justify-content: center;">
+              <a-space>
               <a-tooltip title="编辑员工">
                 <a-button type="link" @click="handleEdit(record)" class="edit-btn">
                   <EditOutlined />
@@ -101,7 +98,8 @@
                   </a-button>
                 </a-tooltip>
               </a-popconfirm>
-            </a-space>
+              </a-space>
+            </div>
           </template>
           <template v-else-if="column.key === 'hireDate'">
             <span class="date-cell">
@@ -231,7 +229,8 @@ const columns = [
     dataIndex: 'name',
     key: 'name',
     width: 140,
-    fixed: 'left'
+    fixed: 'left',
+    ellipsis: true
   },
   {
     title: '年龄',
@@ -246,37 +245,43 @@ const columns = [
     dataIndex: 'gender',
     key: 'gender',
     width: 100,
-    align: 'center'
+    align: 'center',
+    ellipsis: true
   },
   {
     title: '电话',
     dataIndex: 'phone',
     key: 'phone',
-    width: 150
+    width: 150,
+    ellipsis: true
   },
   {
     title: '邮箱',
     dataIndex: 'email',
     key: 'email',
-    width: 220
+    width: 220,
+    ellipsis: true
   },
   {
     title: '部门',
     dataIndex: 'department',
     key: 'department',
-    width: 120
+    width: 120,
+    ellipsis: true
   },
   {
     title: '职位',
     dataIndex: 'position',
     key: 'position',
-    width: 140
+    width: 140,
+    ellipsis: true
   },
   {
     title: '入职日期',
     dataIndex: 'hireDate',
     key: 'hireDate',
     width: 130,
+    ellipsis: true,
     sorter: (a, b) => new Date(a.hireDate) - new Date(b.hireDate)
   },
   {

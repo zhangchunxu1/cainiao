@@ -27,11 +27,7 @@
             allowClear
             size="large"
             @pressEnter="handleSearch"
-          >
-            <template #prefix>
-              <SearchOutlined style="color: #bfbfbf;" />
-            </template>
-          </a-input>
+          />
         </a-form-item>
         <a-form-item label="类型：">
           <a-select

@@ -66,10 +66,23 @@ public class EmployeeController {
     @ApiOperation("删除员工")
     @DeleteMapping("/{id}")
     public Result<Boolean> deleteEmployee(@ApiParam(value = "员工ID", required = true) @PathVariable Long id) {
-        boolean success = employeeService.removeById(id);
+        Employee employee = employeeService.getById(id);
+        if (employee == null) {
+            return Result.error("员工不存在");
+        }
+        employee.setDeleted(1);
+        boolean success = employeeService.updateById(employee);
         if (success) {
             return Result.success(true);
         }
         return Result.error("删除员工失败");
+    }
+
+    @ApiOperation("搜索员工（用于下拉选择）")
+    @GetMapping("/search")
+    public Result<java.util.List<Employee>> searchEmployees(
+            @ApiParam(value = "搜索关键字") @RequestParam(required = false) String keyword) {
+        java.util.List<Employee> employees = employeeService.searchEmployees(keyword);
+        return Result.success(employees);
     }
 } 

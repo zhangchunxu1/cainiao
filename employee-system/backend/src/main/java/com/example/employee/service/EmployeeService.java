@@ -15,4 +15,12 @@ public interface EmployeeService extends IService<Employee> {
      * @return 分页结果
      */
     IPage<Employee> getEmployeeList(Integer page, Integer pageSize, String keyword);
+
+    /**
+     * 搜索员工（用于下拉选择）
+     *
+     * @param keyword 关键字
+     * @return 员工列表
+     */
+    java.util.List<Employee> searchEmployees(String keyword);
 } 

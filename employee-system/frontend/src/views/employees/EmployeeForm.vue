@@ -26,11 +26,7 @@
                 v-model:value="formState.name" 
                 placeholder="请输入姓名" 
                 size="large"
-              >
-                <template #prefix>
-                  <UserOutlined style="color: #bfbfbf;" />
-                </template>
-              </a-input>
+              />
             </a-form-item>
           </a-col>
 
@@ -83,11 +79,7 @@
                 v-model:value="formState.phone" 
                 placeholder="请输入手机号码" 
                 size="large"
-              >
-                <template #prefix>
-                  <PhoneOutlined style="color: #bfbfbf;" />
-                </template>
-              </a-input>
+              />
             </a-form-item>
           </a-col>
 
@@ -97,11 +89,7 @@
                 v-model:value="formState.email" 
                 placeholder="请输入邮箱地址" 
                 size="large"
-              >
-                <template #prefix>
-                  <MailOutlined style="color: #bfbfbf;" />
-                </template>
-              </a-input>
+              />
             </a-form-item>
           </a-col>
         </a-row>
@@ -143,11 +131,7 @@
                 v-model:value="formState.position" 
                 placeholder="请输入职位" 
                 size="large"
-              >
-                <template #prefix>
-                  <AimOutlined style="color: #bfbfbf;" />
-                </template>
-              </a-input>
+              />
             </a-form-item>
           </a-col>
         </a-row>

@@ -75,6 +75,30 @@
           </a-menu-item>
         </a-sub-menu>
 
+        <a-sub-menu key="report-sub">
+          <template #icon><FileTextOutlined /></template>
+          <template #title>日报管理</template>
+          <a-menu-item key="daily-reports" @click="$router.push('/daily-reports')">
+            <FileTextOutlined />
+            <span>日报列表</span>
+          </a-menu-item>
+        </a-sub-menu>
+
+        <a-menu-item key="contracts" @click="$router.push('/contracts')">
+          <FileTextOutlined />
+          <span>合同管理</span>
+        </a-menu-item>
+
+        <a-menu-item key="salary-slips" @click="$router.push('/salary-slips')">
+          <WalletOutlined />
+          <span>工资条管理</span>
+        </a-menu-item>
+
+        <a-menu-item key="reimbursements" @click="$router.push('/reimbursements')">
+          <FileTextOutlined />
+          <span>报销管理</span>
+        </a-menu-item>
+
         <a-sub-menu key="user-sub" v-if="authStore.isAdmin">
           <template #icon><SafetyCertificateOutlined /></template>
           <template #title>账号管理</template>
@@ -127,7 +151,7 @@
                     </a-avatar>
               <div class="user-details">
                 <span class="username">{{ authStore.realName || authStore.username || '用户' }}</span>
-                <span class="role">{{ authStore.isAdmin ? '管理员' : '普通员工' }}</span>
+                <span class="role">{{ authStore.isAdmin ? '管理员' : (authStore.role === 'manager' ? '部门领导' : '普通员工') }}</span>
               </div>
             </div>
             <a-button type="text" @click="handleLogout" class="logout-btn">
@@ -182,7 +206,9 @@ import {
   BellOutlined,
   CalendarOutlined,
   FormOutlined,
-  SafetyCertificateOutlined
+  SafetyCertificateOutlined,
+  FileTextOutlined,
+  WalletOutlined
 } from '@ant-design/icons-vue';
 
 const route = useRoute();
@@ -217,6 +243,9 @@ const selectedKeys = computed(() => {
   }
   if (path.startsWith('/leaves')) {
     return ['leaves'];
+  }
+  if (path.startsWith('/daily-reports')) {
+    return ['daily-reports'];
   }
   if (path.includes('/users/add')) {
     return ['user-add'];
@@ -273,6 +302,7 @@ const handleLogout = () => {
   transition: all 0.3s;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .logo:hover {
@@ -309,6 +339,7 @@ const handleLogout = () => {
   border-right: none !important;
   margin-top: 8px;
   padding: 0 8px;
+  overflow-y: auto;
 }
 
 .side-menu :deep(.ant-menu-item) {
@@ -343,6 +374,24 @@ const handleLogout = () => {
 .sider-footer {
   padding: 16px 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.side-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.side-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.side-menu::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.side-menu::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .system-info {

@@ -54,7 +54,13 @@ public class Employee implements Serializable {
     @NotBlank(message = "职位不能为空")
     private String position;
 
+    @ApiModelProperty(value = "直属上级ID")
+    private Long managerId;
+
     @ApiModelProperty(value = "入职日期")
     @NotBlank(message = "入职日期不能为空")
     private String hireDate;
+
+    @ApiModelProperty(value = "是否删除(0-未删除，1-已删除)")
+    private Integer deleted = 0;
 } 

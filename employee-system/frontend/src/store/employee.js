@@ -19,9 +19,21 @@ export const useEmployeeStore = defineStore('employee', {
     async fetchEmployees(params = {}) {
       this.loading = true
       try {
-        const res = await getEmployees(params)
+        const requestParams = {
+          page: params.page || this.employees.current,
+          pageSize: params.pageSize || this.employees.size,
+          keyword: params.keyword
+        }
+        const res = await getEmployees(requestParams)
         if (res.data.success && res.data.code === 200) {
-          this.employees = res.data.data
+          const data = res.data.data
+          this.employees = {
+            records: data.records || [],
+            total: data.total || 0,
+            size: this.employees.size,
+            current: data.current || this.employees.current,
+            pages: data.pages || 1
+          }
         } else {
           throw new Error(res.data.message || '获取数据失败')
         }

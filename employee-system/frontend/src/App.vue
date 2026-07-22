@@ -39,4 +39,23 @@ html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+.ant-table-container {
+  overflow-x: auto;
+}
+
+.ant-table {
+  min-width: 100%;
+}
+
+.ant-table td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ant-table th {
+  white-space: nowrap;
+  min-width: 80px;
+}
 </style> 

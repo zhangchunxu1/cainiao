@@ -18,7 +18,7 @@ const routes = [
         path: '/dashboard',
         name: 'dashboard',
         component: () => import('../views/Dashboard.vue'),
-        meta: { title: '首页', roles: ['admin', 'employee'] }
+        meta: { title: '首页', roles: ['admin', 'manager', 'employee'] }
       },
       {
         path: '/employees',
@@ -48,19 +48,43 @@ const routes = [
         path: '/attendance',
         name: 'attendance',
         component: () => import('../views/attendance/AttendanceList.vue'),
-        meta: { title: '考勤管理', roles: ['admin', 'employee'] }
+        meta: { title: '考勤管理', roles: ['admin', 'manager', 'employee'] }
       },
       {
         path: '/announcements',
         name: 'announcements',
         component: () => import('../views/announcements/AnnouncementList.vue'),
-        meta: { title: '公告通知', roles: ['admin', 'employee'] }
+        meta: { title: '公告通知', roles: ['admin', 'manager', 'employee'] }
       },
       {
         path: '/leaves',
         name: 'leaves',
         component: () => import('../views/leaves/LeaveList.vue'),
-        meta: { title: '请假管理', roles: ['admin', 'employee'] }
+        meta: { title: '请假管理', roles: ['admin', 'manager', 'employee'] }
+      },
+      {
+        path: '/daily-reports',
+        name: 'daily-reports',
+        component: () => import('../views/dailyReports/DailyReportList.vue'),
+        meta: { title: '日报管理', roles: ['admin', 'manager', 'employee'] }
+      },
+      {
+        path: '/contracts',
+        name: 'contracts',
+        component: () => import('../views/contracts/ContractList.vue'),
+        meta: { title: '合同管理', roles: ['admin', 'manager', 'employee'] }
+      },
+      {
+        path: '/salary-slips',
+        name: 'salary-slips',
+        component: () => import('../views/salary/SalarySlipList.vue'),
+        meta: { title: '工资条管理', roles: ['admin', 'manager', 'employee'] }
+      },
+      {
+        path: '/reimbursements',
+        name: 'reimbursements',
+        component: () => import('../views/reimbursement/ReimbursementList.vue'),
+        meta: { title: '报销管理', roles: ['admin', 'manager', 'employee'] }
       },
       {
         path: '/users',

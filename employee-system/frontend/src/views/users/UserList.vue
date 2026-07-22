@@ -26,11 +26,7 @@
             size="large"
             class="search-input"
             @pressEnter="handleSearch"
-          >
-            <template #prefix>
-              <SearchOutlined style="color: #bfbfbf;" />
-            </template>
-          </a-input>
+          />
         </a-form-item>
         <a-form-item>
           <a-button type="primary" @click="handleSearch" size="large" class="search-button">
@@ -69,12 +65,14 @@
         :loading="loading"
         rowKey="id"
         :pagination="false"
+        :scroll="{ x: 800 }"
         class="user-table"
         :locale="{ emptyText: '暂无用户数据' }"
       >
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'action'">
-            <a-space>
+            <div style="display: flex; align-items: center; justify-content: center;">
+              <a-space>
               <a-tooltip title="编辑">
                 <a-button type="link" @click="handleEdit(record)" class="edit-btn">
                   <EditOutlined />
@@ -109,11 +107,12 @@
                   </a-button>
                 </a-tooltip>
               </a-popconfirm>
-            </a-space>
+              </a-space>
+            </div>
           </template>
           <template v-else-if="column.key === 'role'">
-            <a-tag :color="record.role === 'admin' ? 'red' : 'blue'" class="role-tag">
-              {{ record.role === 'admin' ? '👑 管理员' : '👤 普通员工' }}
+            <a-tag :color="record.role === 'admin' ? 'red' : (record.role === 'manager' ? 'orange' : 'blue')" class="role-tag">
+              {{ record.role === 'admin' ? '👑 管理员' : (record.role === 'manager' ? '🏢 部门领导' : '👤 普通员工') }}
             </a-tag>
           </template>
           <template v-else-if="column.key === 'username'">
@@ -196,13 +195,15 @@ const columns = [
     title: '用户名',
     dataIndex: 'username',
     key: 'username',
-    width: 160
+    width: 160,
+    ellipsis: true
   },
   {
     title: '真实姓名',
     dataIndex: 'realName',
     key: 'realName',
     width: 140,
+    ellipsis: true,
     customRender: ({ text }) => text || '-'
   },
   {

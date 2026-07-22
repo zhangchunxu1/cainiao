@@ -26,11 +26,7 @@
                 placeholder="请输入用户名"
                 size="large"
                 :disabled="isEdit"
-              >
-                <template #prefix>
-                  <UserOutlined style="color: #bfbfbf;" />
-                </template>
-              </a-input>
+              />
             </a-form-item>
           </a-col>
           <a-col :span="12">
@@ -63,6 +59,7 @@
               >
                 <a-select-option value="admin">管理员</a-select-option>
                 <a-select-option value="employee">普通员工</a-select-option>
+                <a-select-option value="manager">部门领导</a-select-option>
               </a-select>
             </a-form-item>
           </a-col>

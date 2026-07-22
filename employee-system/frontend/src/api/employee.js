@@ -54,5 +54,6 @@ export const getEmployeeById = (id) => api.get(`/employees/${id}`)
 export const addEmployee = (data) => api.post('/employees', data)
 export const updateEmployee = (id, data) => api.put(`/employees/${id}`, data)
 export const deleteEmployee = (id) => api.delete(`/employees/${id}`)
+export const searchEmployees = (params) => api.get('/employees/search', { params })
 
 export default api

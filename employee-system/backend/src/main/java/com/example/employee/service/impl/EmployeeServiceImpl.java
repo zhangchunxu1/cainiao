@@ -18,13 +18,29 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
         Page<Employee> pageParam = new Page<>(page, pageSize);
         LambdaQueryWrapper<Employee> queryWrapper = new LambdaQueryWrapper<>();
         
+        queryWrapper.eq(Employee::getDeleted, 0);
+        
         if (StringUtils.hasText(keyword)) {
-            queryWrapper.like(Employee::getName, keyword)
+            queryWrapper.and(wrapper -> wrapper
+                    .like(Employee::getName, keyword)
                     .or().like(Employee::getDepartment, keyword)
-                    .or().like(Employee::getPosition, keyword);
+                    .or().like(Employee::getPosition, keyword));
         }
         
         queryWrapper.orderByDesc(Employee::getId);
         return baseMapper.selectPage(pageParam, queryWrapper);
+    }
+
+    @Override
+    public java.util.List<Employee> searchEmployees(String keyword) {
+        LambdaQueryWrapper<Employee> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Employee::getDeleted, 0);
+        
+        if (StringUtils.hasText(keyword)) {
+            queryWrapper.like(Employee::getName, keyword);
+        }
+        
+        queryWrapper.orderByAsc(Employee::getName);
+        return baseMapper.selectList(queryWrapper);
     }
 } 
