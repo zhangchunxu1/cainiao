@@ -1,0 +1,35 @@
+CREATE TABLE IF NOT EXISTS `reimbursement` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '报销ID',
+  `employee_id` bigint(20) COMMENT '员工ID',
+  `employee_name` varchar(100) COMMENT '员工姓名',
+  `department` varchar(100) COMMENT '部门',
+  `reimbursement_no` varchar(50) COMMENT '报销单号',
+  `type` varchar(50) COMMENT '报销类型',
+  `amount` decimal(18,2) DEFAULT 0.00 COMMENT '报销金额',
+  `reason` text COMMENT '报销事由',
+  `status` varchar(50) DEFAULT '待审批' COMMENT '状态：待审批、待财务审批、已审批、已驳回',
+  `apply_date` date COMMENT '申请日期',
+  `manager_approve_date` date COMMENT '部门经理审批日期',
+  `manager_approver` varchar(100) COMMENT '部门经理审批人',
+  `manager_remark` varchar(500) COMMENT '部门经理审批意见',
+  `finance_approve_date` date COMMENT '财务审批日期',
+  `finance_approver` varchar(100) COMMENT '财务审批人',
+  `finance_remark` varchar(500) COMMENT '财务审批意见',
+  `remark` varchar(500) COMMENT '备注',
+  `deleted` tinyint(1) DEFAULT 0 COMMENT '是否删除',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='报销表';
+
+INSERT INTO `reimbursement` (`employee_id`, `employee_name`, `department`, `reimbursement_no`, `type`, `amount`, `reason`, `status`, `apply_date`, `manager_approve_date`, `manager_approver`, `manager_remark`, `finance_approve_date`, `finance_approver`, `finance_remark`, `remark`) VALUES
+(1, '陈建国', '技术部', 'BX-2026-001', '差旅费', 1580.00, '出差上海参加技术培训，往返机票及住宿费用', '已审批', '2026-07-01', '2026-07-02', '朱建华', '同意', '2026-07-03', '杨敏', '审核通过', ''),
+(2, '李思琪', '技术部', 'BX-2026-002', '办公用品', 320.00, '购买办公电脑配件及耗材', '待审批', '2026-07-03', NULL, NULL, NULL, NULL, NULL, NULL, ''),
+(3, '王浩然', '技术部', 'BX-2026-003', '差旅费', 2150.00, '前往北京客户现场技术支持，高铁票及住宿', '待财务审批', '2026-07-05', '2026-07-06', '朱建华', '同意', NULL, NULL, NULL, ''),
+(4, '刘洋', '技术部', 'BX-2026-004', '交通费', 450.00, '本月因公外出打车费用报销', '待审批', '2026-07-07', NULL, NULL, NULL, NULL, NULL, NULL, ''),
+(5, '张婷婷', '市场部', 'BX-2026-005', '业务招待', 880.00, '招待重要客户餐饮费用', '已审批', '2026-07-02', '2026-07-03', '孙雨晴', '同意', '2026-07-04', '杨敏', '审核通过', ''),
+(6, '赵明', '市场部', 'BX-2026-006', '差旅费', 3200.00, '参加广州展会，交通及住宿费用', '待审批', '2026-07-08', NULL, NULL, NULL, NULL, NULL, NULL, ''),
+(7, '孙雨晴', '市场部', 'BX-2026-007', '广告费', 15000.00, '线上广告投放费用', '已审批', '2026-07-01', '2026-07-02', '朱建华', '同意', '2026-07-03', '杨敏', '审核通过', ''),
+(8, '周伟', '人事部', 'BX-2026-008', '培训费', 2600.00, '新员工入职培训教材及场地费用', '待审批', '2026-07-06', NULL, NULL, NULL, NULL, NULL, NULL, ''),
+(9, '吴芳', '人事部', 'BX-2026-009', '办公用品', 580.00, '购买人事档案盒及办公文具', '已驳回', '2026-07-04', '2026-07-05', '许文静', '金额过高，请重新申请', NULL, NULL, NULL, ''),
+(10, '郑凯', '财务部', 'BX-2026-010', '财务费用', 280.00, '银行手续费及转账费用', '已审批', '2026-07-03', '2026-07-04', '朱建华', '同意', '2026-07-05', '杨敏', '审核通过', ''),
+(11, '许文静', '人事部', 'BX-2026-011', '福利费', 3500.00, '员工生日福利及节日礼品采购', '待财务审批', '2026-07-09', '2026-07-10', '朱建华', '同意', NULL, NULL, NULL, ''),
+(12, '杨敏', '财务部', 'BX-2026-012', '交通费', 320.00, '本月因公外出交通费报销', '待审批', '2026-07-08', NULL, NULL, NULL, NULL, NULL, NULL, '');
