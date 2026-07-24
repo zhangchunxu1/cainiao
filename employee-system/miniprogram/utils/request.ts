@@ -1,4 +1,10 @@
-const BASE_URL = 'http://192.168.31.139:8080'
+const DEVTOOLS_BASE_URL = 'http://127.0.0.1:8080'
+const DEVICE_BASE_URL = 'http://192.168.31.139:8080'
+
+const getBaseUrl = () => {
+  const systemInfo = uni.getSystemInfoSync()
+  return systemInfo.platform === 'devtools' ? DEVTOOLS_BASE_URL : DEVICE_BASE_URL
+}
 
 export interface RequestOptions {
   url: string
@@ -32,7 +38,7 @@ const request = <T = any>(options: RequestOptions): Promise<T> => {
       uni.showLoading({ title: '加载中...' })
     }
     
-    const requestUrl = BASE_URL + options.url
+    const requestUrl = getBaseUrl() + options.url
     console.log('[Request] URL:', requestUrl)
     
     uni.request({
