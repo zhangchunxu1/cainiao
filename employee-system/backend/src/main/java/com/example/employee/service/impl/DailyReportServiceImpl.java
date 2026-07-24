@@ -10,13 +10,23 @@ import com.example.employee.service.DailyReportService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class DailyReportServiceImpl extends ServiceImpl<DailyReportMapper, DailyReport> implements DailyReportService {
 
     @Override
-    public IPage<DailyReport> getDailyReportList(Integer page, Integer pageSize, String keyword, Long employeeId, String status) {
+    public IPage<DailyReport> getDailyReportList(Integer page, Integer pageSize, String keyword, Long employeeId, String status, List<Long> accessibleEmployeeIds) {
         Page<DailyReport> pageParam = new Page<>(page, pageSize);
         LambdaQueryWrapper<DailyReport> wrapper = new LambdaQueryWrapper<>();
+
+        if (accessibleEmployeeIds != null) {
+            if (accessibleEmployeeIds.isEmpty()) {
+                wrapper.eq(DailyReport::getEmployeeId, -1L);
+            } else {
+                wrapper.in(DailyReport::getEmployeeId, accessibleEmployeeIds);
+            }
+        }
         
         if (StringUtils.isNotBlank(keyword)) {
             wrapper.and(w -> w

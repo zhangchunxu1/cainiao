@@ -4,9 +4,11 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.employee.entity.Reimbursement;
 
-public interface ReimbursementService extends IService<Reimbursement> {
+import java.util.List;
 
-    IPage<Reimbursement> getReimbursementList(Integer page, Integer pageSize, String keyword);
+public interface ReimbursementService extends IService<Reimbursement> {
+    
+    IPage<Reimbursement> getReimbursementList(Integer page, Integer pageSize, String keyword, List<Long> accessibleEmployeeIds);
 
     Reimbursement managerApprove(Long id, String approver, String remark);
 

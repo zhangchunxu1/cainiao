@@ -157,7 +157,7 @@
                 </a-popconfirm>
               </template>
 
-              <template v-if="authStore.isAdmin || record.employeeId === authStore.userId">
+              <template v-if="authStore.isAdmin || record.status === '待审批'">
                 <a-popconfirm
                   title="确定要删除这条记录吗？"
                   ok-text="确定"
@@ -526,8 +526,7 @@ const handleCancel = () => {
 const handleApprove = async (record) => {
   try {
     await leaveRequestApi.approveLeave(record.id, {
-      approver: '管理员',
-      comment: '同意'
+      approvalComment: '同意'
     })
     message.success('已批准')
     fetchLeaveRequests()
@@ -539,8 +538,7 @@ const handleApprove = async (record) => {
 const handleReject = async (record) => {
   try {
     await leaveRequestApi.rejectLeave(record.id, {
-      approver: '管理员',
-      comment: '不同意'
+      approvalComment: '不同意'
     })
     message.success('已拒绝')
     fetchLeaveRequests()

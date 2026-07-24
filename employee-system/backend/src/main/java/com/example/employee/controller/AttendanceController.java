@@ -4,16 +4,21 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.example.employee.common.Result;
 import com.example.employee.entity.Attendance;
+import com.example.employee.entity.Employee;
+import com.example.employee.entity.User;
 import com.example.employee.service.AttendanceService;
+import com.example.employee.service.CurrentUserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 @Api(tags = "考勤管理")
 @RestController
@@ -22,6 +27,7 @@ import java.time.LocalTime;
 public class AttendanceController {
 
     private final AttendanceService attendanceService;
+    private final CurrentUserService currentUserService;
 
     @ApiOperation("获取考勤列表")
     @GetMapping
@@ -32,18 +38,26 @@ public class AttendanceController {
             @RequestParam(required = false) Integer size,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Long employeeId,
-            @RequestParam(required = false) String month) {
+            @RequestParam(required = false) String month,
+            HttpServletRequest request) {
 
         Integer actualPage = current != null ? current : page;
         Integer actualSize = size != null ? size : pageSize;
-        IPage<Attendance> result = attendanceService.getAttendanceList(actualPage, actualSize, keyword, employeeId, month);
+        User currentUser = currentUserService.requireUser(request);
+        List<Long> accessibleEmployeeIds = currentUserService.getAccessibleEmployeeIds(currentUser);
+        if (employeeId != null && !currentUserService.canAccessEmployee(currentUser, employeeId)) {
+            return Result.error("没有权限查看该员工考勤");
+        }
+        IPage<Attendance> result = attendanceService.getAttendanceList(actualPage, actualSize, keyword, employeeId, month, accessibleEmployeeIds);
         return Result.success(result);
     }
 
     @ApiOperation("获取今日考勤")
     @GetMapping("/today")
-    public Result<Attendance> getTodayAttendance(@RequestParam Long employeeId) {
-        Attendance attendance = getTodayByEmployeeId(employeeId);
+    public Result<Attendance> getTodayAttendance(HttpServletRequest request) {
+        User currentUser = currentUserService.requireUser(request);
+        Employee currentEmployee = currentUserService.requireEmployee(currentUser);
+        Attendance attendance = getTodayByEmployeeId(currentEmployee.getId());
         return Result.success(attendance);
     }
 
@@ -88,17 +102,21 @@ public class AttendanceController {
 
     @ApiOperation("签到")
     @PostMapping("/checkin")
-    public Result<Attendance> checkIn(@RequestBody(required = false) Attendance attendance) {
-        if (attendance == null || attendance.getEmployeeId() == null) {
-            return Result.error("缺少员工信息，无法签到");
-        }
+    public Result<Attendance> checkIn(@RequestBody(required = false) Attendance attendance, HttpServletRequest request) {
+        User currentUser = currentUserService.requireUser(request);
+        Employee currentEmployee = currentUserService.requireEmployee(currentUser);
 
-        Attendance existing = getTodayByEmployeeId(attendance.getEmployeeId());
+        Attendance existing = getTodayByEmployeeId(currentEmployee.getId());
         if (existing != null) {
             return Result.success(existing);
         }
 
+        if (attendance == null) {
+            attendance = new Attendance();
+        }
         LocalTime now = LocalTime.now();
+        attendance.setEmployeeId(currentEmployee.getId());
+        attendance.setEmployeeName(currentEmployee.getName());
         attendance.setDate(LocalDate.now());
         attendance.setCheckInTime(now);
         attendance.setStatus(now.isAfter(LocalTime.of(9, 0)) ? "LATE" : "NORMAL");
@@ -109,12 +127,11 @@ public class AttendanceController {
 
     @ApiOperation("签退")
     @PostMapping("/checkout")
-    public Result<Attendance> checkOut(@RequestBody(required = false) Attendance attendance) {
-        if (attendance == null || attendance.getEmployeeId() == null) {
-            return Result.error("缺少员工信息，无法签退");
-        }
+    public Result<Attendance> checkOut(@RequestBody(required = false) Attendance attendance, HttpServletRequest request) {
+        User currentUser = currentUserService.requireUser(request);
+        Employee currentEmployee = currentUserService.requireEmployee(currentUser);
 
-        Attendance existing = getTodayByEmployeeId(attendance.getEmployeeId());
+        Attendance existing = getTodayByEmployeeId(currentEmployee.getId());
         if (existing == null) {
             return Result.error("未找到今日签到记录");
         }

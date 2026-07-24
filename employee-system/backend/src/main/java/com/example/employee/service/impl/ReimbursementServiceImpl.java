@@ -11,15 +11,24 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class ReimbursementServiceImpl extends ServiceImpl<ReimbursementMapper, Reimbursement> implements ReimbursementService {
 
     @Override
-    public IPage<Reimbursement> getReimbursementList(Integer page, Integer pageSize, String keyword) {
+    public IPage<Reimbursement> getReimbursementList(Integer page, Integer pageSize, String keyword, List<Long> accessibleEmployeeIds) {
         Page<Reimbursement> pageParam = new Page<>(page, pageSize);
         LambdaQueryWrapper<Reimbursement> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Reimbursement::getDeleted, 0);
+
+        if (accessibleEmployeeIds != null) {
+            if (accessibleEmployeeIds.isEmpty()) {
+                queryWrapper.eq(Reimbursement::getEmployeeId, -1L);
+            } else {
+                queryWrapper.in(Reimbursement::getEmployeeId, accessibleEmployeeIds);
+            }
+        }
         
         if (StringUtils.hasText(keyword)) {
             queryWrapper.and(wrapper -> wrapper

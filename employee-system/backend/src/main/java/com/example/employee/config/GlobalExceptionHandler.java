@@ -23,6 +23,11 @@ public class GlobalExceptionHandler {
         return Result.error("系统异常，请联系管理员");
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public Result<String> handleIllegalArgumentException(IllegalArgumentException e) {
+        return Result.error(e.getMessage());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public Result<String> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         BindingResult bindingResult = e.getBindingResult();

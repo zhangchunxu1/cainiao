@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 @Service
 public class SalarySlipServiceImpl implements SalarySlipService {
@@ -19,9 +20,17 @@ public class SalarySlipServiceImpl implements SalarySlipService {
     private SalarySlipMapper salarySlipMapper;
 
     @Override
-    public IPage<SalarySlip> getSalarySlipPage(Long employeeId, String payMonth, Integer page, Integer pageSize) {
+    public IPage<SalarySlip> getSalarySlipPage(Long employeeId, String payMonth, Integer page, Integer pageSize, List<Long> accessibleEmployeeIds) {
         Page<SalarySlip> pageParam = new Page<>(page, pageSize);
         LambdaQueryWrapper<SalarySlip> queryWrapper = new LambdaQueryWrapper<>();
+
+        if (accessibleEmployeeIds != null) {
+            if (accessibleEmployeeIds.isEmpty()) {
+                queryWrapper.eq(SalarySlip::getEmployeeId, -1L);
+            } else {
+                queryWrapper.in(SalarySlip::getEmployeeId, accessibleEmployeeIds);
+            }
+        }
         
         if (employeeId != null) {
             queryWrapper.eq(SalarySlip::getEmployeeId, employeeId);
@@ -59,10 +68,17 @@ public class SalarySlipServiceImpl implements SalarySlipService {
     }
 
     @Override
-    public Map<String, Object> getSalarySummary(Long employeeId, String payMonth) {
+    public Map<String, Object> getSalarySummary(Long employeeId, String payMonth, List<Long> accessibleEmployeeIds) {
         Map<String, Object> summary = new HashMap<>();
         
         LambdaQueryWrapper<SalarySlip> queryWrapper = new LambdaQueryWrapper<>();
+        if (accessibleEmployeeIds != null) {
+            if (accessibleEmployeeIds.isEmpty()) {
+                queryWrapper.eq(SalarySlip::getEmployeeId, -1L);
+            } else {
+                queryWrapper.in(SalarySlip::getEmployeeId, accessibleEmployeeIds);
+            }
+        }
         if (employeeId != null) {
             queryWrapper.eq(SalarySlip::getEmployeeId, employeeId);
         }

@@ -4,7 +4,9 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.employee.entity.Attendance;
 
+import java.util.List;
+
 public interface AttendanceService extends IService<Attendance> {
     
-    IPage<Attendance> getAttendanceList(Integer page, Integer pageSize, String keyword, Long employeeId, String month);
+    IPage<Attendance> getAttendanceList(Integer page, Integer pageSize, String keyword, Long employeeId, String month, List<Long> accessibleEmployeeIds);
 }

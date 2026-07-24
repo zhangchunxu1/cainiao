@@ -1,15 +1,12 @@
 package com.example.employee.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.example.employee.common.Result;
 import com.example.employee.entity.Employee;
 import com.example.employee.entity.LeaveRequest;
 import com.example.employee.entity.User;
-import com.example.employee.service.EmployeeService;
+import com.example.employee.service.CurrentUserService;
 import com.example.employee.service.LeaveRequestService;
-import com.example.employee.service.UserService;
-import com.example.employee.util.JwtUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.util.List;
+import java.time.temporal.ChronoUnit;
 
 @Api(tags = "请假管理")
 @RestController
@@ -26,9 +23,7 @@ import java.util.List;
 public class LeaveRequestController {
 
     private final LeaveRequestService leaveRequestService;
-    private final UserService userService;
-    private final EmployeeService employeeService;
-    private final JwtUtil jwtUtil;
+    private final CurrentUserService currentUserService;
 
     @ApiOperation("获取请假列表")
     @GetMapping
@@ -38,38 +33,37 @@ public class LeaveRequestController {
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String status,
             HttpServletRequest request) {
-        
-        String token = request.getHeader("Authorization");
-        String role = "employee";
-        String employeeName = null;
-        
-        if (token != null && token.startsWith("Bearer ")) {
-            token = token.substring(7);
-            String username = jwtUtil.getUsernameFromToken(token);
-            User currentUser = userService.getOne(new LambdaQueryWrapper<User>().eq(User::getUsername, username));
-            if (currentUser != null) {
-                role = currentUser.getRole();
-                employeeName = currentUser.getRealName();
-            }
-        }
-        
-        IPage<LeaveRequest> result = leaveRequestService.getLeaveRequestListWithPermission(page, pageSize, keyword, status, role, employeeName);
+        User currentUser = currentUserService.requireUser(request);
+        IPage<LeaveRequest> result = leaveRequestService.getLeaveRequestListWithPermission(
+                page, pageSize, keyword, status, currentUserService.getAccessibleEmployeeIds(currentUser));
         return Result.success(result);
     }
 
     @ApiOperation("根据ID获取请假详情")
     @GetMapping("/{id}")
-    public Result<LeaveRequest> getLeaveRequestById(@PathVariable Long id) {
+    public Result<LeaveRequest> getLeaveRequestById(@PathVariable Long id, HttpServletRequest request) {
         LeaveRequest leaveRequest = leaveRequestService.getById(id);
         if (leaveRequest == null) {
             return Result.error("请假记录不存在");
+        }
+        User currentUser = currentUserService.requireUser(request);
+        if (!currentUserService.canAccessEmployee(currentUser, leaveRequest.getEmployeeId())) {
+            return Result.error("没有权限查看该请假记录");
         }
         return Result.success(leaveRequest);
     }
 
     @ApiOperation("提交请假申请")
     @PostMapping
-    public Result<LeaveRequest> addLeaveRequest(@Valid @RequestBody LeaveRequest leaveRequest) {
+    public Result<LeaveRequest> addLeaveRequest(@Valid @RequestBody LeaveRequest leaveRequest, HttpServletRequest request) {
+        User currentUser = currentUserService.requireUser(request);
+        Employee currentEmployee = currentUserService.requireEmployee(currentUser);
+        fillRequester(leaveRequest, currentEmployee);
+        leaveRequest.setStatus("待审批");
+        leaveRequest.setApprover(null);
+        leaveRequest.setApprovalComment(null);
+        leaveRequest.setApprovalTime(null);
+        fillLeaveDays(leaveRequest);
         boolean success = leaveRequestService.save(leaveRequest);
         if (success) {
             return Result.success(leaveRequest);
@@ -79,11 +73,30 @@ public class LeaveRequestController {
 
     @ApiOperation("更新请假记录")
     @PutMapping("/{id}")
-    public Result<LeaveRequest> updateLeaveRequest(@PathVariable Long id, @Valid @RequestBody LeaveRequest leaveRequest) {
-        leaveRequest.setId(id);
-        boolean success = leaveRequestService.updateById(leaveRequest);
+    public Result<LeaveRequest> updateLeaveRequest(@PathVariable Long id, @Valid @RequestBody LeaveRequest leaveRequest, HttpServletRequest request) {
+        LeaveRequest existing = leaveRequestService.getById(id);
+        if (existing == null) {
+            return Result.error("请假记录不存在");
+        }
+        if (!"待审批".equals(existing.getStatus())) {
+            return Result.error("只有待审批的请假申请可以修改");
+        }
+        User currentUser = currentUserService.requireUser(request);
+        Employee currentEmployee = currentUserService.getEmployee(currentUser);
+        boolean owner = currentEmployee != null && existing.getEmployeeId().equals(currentEmployee.getId());
+        if (!currentUserService.isAdmin(currentUser) && !owner) {
+            return Result.error("只有本人或管理员可以修改请假申请");
+        }
+
+        existing.setLeaveType(leaveRequest.getLeaveType());
+        existing.setStartDate(leaveRequest.getStartDate());
+        existing.setEndDate(leaveRequest.getEndDate());
+        existing.setDays(leaveRequest.getDays());
+        existing.setReason(leaveRequest.getReason());
+        fillLeaveDays(existing);
+        boolean success = leaveRequestService.updateById(existing);
         if (success) {
-            return Result.success(leaveRequest);
+            return Result.success(existing);
         }
         return Result.error("更新失败");
     }
@@ -96,34 +109,12 @@ public class LeaveRequestController {
             return Result.error("请假记录不存在");
         }
 
-        String token = request.getHeader("Authorization");
-        if (token == null || !token.startsWith("Bearer ")) {
-            return Result.error("请先登录");
-        }
-        token = token.substring(7);
-        
-        Long currentUserId = jwtUtil.getUserIdFromToken(token);
-        User currentUser = userService.getById(currentUserId);
-        
-        if (currentUser == null) {
-            return Result.error("用户不存在");
-        }
-        
-        boolean canDelete = false;
-        
-        if ("admin".equals(currentUser.getRole())) {
-            canDelete = true;
-        } else if (leaveRequest.getEmployeeId().equals(currentUserId)) {
-            canDelete = true;
-        } else {
-            Employee requester = employeeService.getById(leaveRequest.getEmployeeId());
-            if (requester != null && requester.getManagerId() != null && requester.getManagerId().equals(currentUserId)) {
-                canDelete = true;
-            }
-        }
-        
-        if (!canDelete) {
+        User currentUser = currentUserService.requireUser(request);
+        if (!currentUserService.canAccessEmployee(currentUser, leaveRequest.getEmployeeId())) {
             return Result.error("只有管理员、直属上级或本人才能删除请假记录");
+        }
+        if (!currentUserService.isAdmin(currentUser) && !"待审批".equals(leaveRequest.getStatus())) {
+            return Result.error("非管理员只能删除待审批的请假记录");
         }
 
         boolean success = leaveRequestService.removeById(id);
@@ -146,50 +137,17 @@ public class LeaveRequestController {
             return Result.error("请假记录不存在");
         }
 
-        String token = request.getHeader("Authorization");
-        if (token == null || !token.startsWith("Bearer ")) {
-            return Result.error("请先登录");
+        if (!"待审批".equals(leaveRequest.getStatus())) {
+            return Result.error("当前请假状态不允许审批");
         }
-        token = token.substring(7);
-        
-        Long currentUserId = jwtUtil.getUserIdFromToken(token);
-        User currentUser = userService.getById(currentUserId);
-        
-        if (currentUser == null) {
-            return Result.error("用户不存在");
-        }
-        
-        boolean canApprove = false;
-        
-        Employee requester = employeeService.getById(leaveRequest.getEmployeeId());
-        
-        if ("admin".equals(currentUser.getRole()) || "manager".equals(currentUser.getRole())) {
-            canApprove = true;
-        } else {
-            if (requester != null) {
-                if (requester.getName().equals(currentUser.getRealName())) {
-                    return Result.error("不能审批自己的请假申请");
-                }
-                LambdaQueryWrapper<Employee> empWrapper = new LambdaQueryWrapper<>();
-                empWrapper.eq(Employee::getName, currentUser.getRealName());
-                List<Employee> currentEmployees = employeeService.list(empWrapper);
-                if (!currentEmployees.isEmpty()) {
-                    Employee currentEmployee = currentEmployees.get(0);
-                    if (requester.getManagerId() != null && requester.getManagerId().equals(currentEmployee.getId())) {
-                        canApprove = true;
-                    }
-                }
-            }
-        }
-        
-        if (!canApprove) {
+
+        User currentUser = currentUserService.requireUser(request);
+        if (!currentUserService.canApproveEmployee(currentUser, leaveRequest.getEmployeeId())) {
             return Result.error("只有管理员或直属上级才能审批请假");
         }
 
         leaveRequest.setStatus("已批准");
-        if (approver != null) {
-            leaveRequest.setApprover(approver);
-        }
+        leaveRequest.setApprover(getDisplayName(currentUser));
         if (approvalComment != null) {
             leaveRequest.setApprovalComment(approvalComment);
         }
@@ -215,50 +173,17 @@ public class LeaveRequestController {
             return Result.error("请假记录不存在");
         }
 
-        String token = request.getHeader("Authorization");
-        if (token == null || !token.startsWith("Bearer ")) {
-            return Result.error("请先登录");
+        if (!"待审批".equals(leaveRequest.getStatus())) {
+            return Result.error("当前请假状态不允许审批");
         }
-        token = token.substring(7);
-        
-        Long currentUserId = jwtUtil.getUserIdFromToken(token);
-        User currentUser = userService.getById(currentUserId);
-        
-        if (currentUser == null) {
-            return Result.error("用户不存在");
-        }
-        
-        boolean canReject = false;
-        
-        Employee requester = employeeService.getById(leaveRequest.getEmployeeId());
-        
-        if ("admin".equals(currentUser.getRole()) || "manager".equals(currentUser.getRole())) {
-            canReject = true;
-        } else {
-            if (requester != null) {
-                if (requester.getName().equals(currentUser.getRealName())) {
-                    return Result.error("不能审批自己的请假申请");
-                }
-                LambdaQueryWrapper<Employee> empWrapper = new LambdaQueryWrapper<>();
-                empWrapper.eq(Employee::getName, currentUser.getRealName());
-                List<Employee> currentEmployees = employeeService.list(empWrapper);
-                if (!currentEmployees.isEmpty()) {
-                    Employee currentEmployee = currentEmployees.get(0);
-                    if (requester.getManagerId() != null && requester.getManagerId().equals(currentEmployee.getId())) {
-                        canReject = true;
-                    }
-                }
-            }
-        }
-        
-        if (!canReject) {
+
+        User currentUser = currentUserService.requireUser(request);
+        if (!currentUserService.canApproveEmployee(currentUser, leaveRequest.getEmployeeId())) {
             return Result.error("只有管理员或直属上级才能审批请假");
         }
 
         leaveRequest.setStatus("已拒绝");
-        if (approver != null) {
-            leaveRequest.setApprover(approver);
-        }
+        leaveRequest.setApprover(getDisplayName(currentUser));
         if (approvalComment != null) {
             leaveRequest.setApprovalComment(approvalComment);
         }
@@ -269,5 +194,24 @@ public class LeaveRequestController {
             return Result.success(leaveRequest);
         }
         return Result.error("拒绝失败");
+    }
+
+    private void fillRequester(LeaveRequest leaveRequest, Employee employee) {
+        leaveRequest.setEmployeeId(employee.getId());
+        leaveRequest.setEmployeeName(employee.getName());
+        leaveRequest.setDepartment(employee.getDepartment());
+    }
+
+    private void fillLeaveDays(LeaveRequest leaveRequest) {
+        if (leaveRequest.getStartDate() != null && leaveRequest.getEndDate() != null) {
+            if (leaveRequest.getEndDate().isBefore(leaveRequest.getStartDate())) {
+                throw new IllegalArgumentException("结束日期不能早于开始日期");
+            }
+            leaveRequest.setDays((int) ChronoUnit.DAYS.between(leaveRequest.getStartDate(), leaveRequest.getEndDate()) + 1);
+        }
+    }
+
+    private String getDisplayName(User user) {
+        return user.getRealName() != null && !user.getRealName().isEmpty() ? user.getRealName() : user.getUsername();
     }
 }

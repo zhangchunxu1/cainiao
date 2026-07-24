@@ -416,9 +416,6 @@ async function fetchSalarySlips() {
     if (searchForm.payMonth) {
       params.payMonth = searchForm.payMonth.format('YYYY-MM')
     }
-    if (!authStore.isAdmin) {
-      params.employeeId = authStore.userId
-    }
     const res = await salaryApi.getSalarySlips(params)
     if (res.data.success && res.data.code === 200) {
       const data = res.data.data

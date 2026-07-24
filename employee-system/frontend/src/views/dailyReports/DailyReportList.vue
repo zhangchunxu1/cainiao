@@ -124,7 +124,7 @@
                 </a-button>
               </a-tooltip>
 
-              <template v-if="record.status === '已提交' && authStore.isAdmin">
+              <template v-if="record.status === '已提交' && (authStore.isAdmin || authStore.isManager)">
                 <a-popconfirm
                   title="确定审核此日报吗？"
                   ok-text="确定"
@@ -137,7 +137,7 @@
                 </a-popconfirm>
               </template>
 
-              <template v-if="authStore.isAdmin || record.employeeId === authStore.userId">
+              <template v-if="authStore.isAdmin || record.status === '已提交'">
                 <a-popconfirm
                   title="确定要删除这条记录吗？"
                   ok-text="确定"
@@ -391,10 +391,6 @@ const fetchDailyReports = async () => {
       params.status = selectedStatus.value
     }
 
-    if (!authStore.isAdmin) {
-      params.employeeId = authStore.userId
-    }
-
     const res = await dailyReportApi.getDailyReportList(params)
     const data = res.data.data
     reports.value = data.records || []
@@ -496,7 +492,6 @@ const handleConfirmReview = async () => {
   try {
     reviewLoading.value = true
     const res = await dailyReportApi.reviewDailyReport(currentRecord.value.id, {
-      reviewer: '管理员',
       reviewComment: reviewForm.comment
     })
     if (res.data && res.data.success) {
