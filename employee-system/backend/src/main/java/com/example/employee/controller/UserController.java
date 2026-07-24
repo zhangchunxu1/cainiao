@@ -66,6 +66,14 @@ public class UserController {
         if (existingUser == null) {
             return Result.error("用户不存在");
         }
+        if (isProtectedAdmin(existingUser)) {
+            if (!existingUser.getUsername().equals(user.getUsername())) {
+                return Result.error("不能修改管理员账号用户名");
+            }
+            if (!"admin".equalsIgnoreCase(user.getRole())) {
+                return Result.error("不能取消管理员账号权限");
+            }
+        }
         if (!existingUser.getUsername().equals(user.getUsername())) {
             User nameCheck = userService.getUserByUsername(user.getUsername());
             if (nameCheck != null) {
@@ -89,7 +97,11 @@ public class UserController {
     @ApiOperation("删除用户")
     @DeleteMapping("/{id}")
     public Result<Boolean> deleteUser(@PathVariable Long id) {
-        if (id == 1L) {
+        User user = userService.getById(id);
+        if (user == null) {
+            return Result.error("用户不存在");
+        }
+        if (isProtectedAdmin(user)) {
             return Result.error("不能删除管理员账号");
         }
         boolean success = userService.removeById(id);
@@ -112,5 +124,11 @@ public class UserController {
             return Result.success(true);
         }
         return Result.error("重置失败");
+    }
+
+    private boolean isProtectedAdmin(User user) {
+        return user != null
+                && ("admin".equalsIgnoreCase(user.getUsername())
+                || "admin".equalsIgnoreCase(user.getRole()));
     }
 }

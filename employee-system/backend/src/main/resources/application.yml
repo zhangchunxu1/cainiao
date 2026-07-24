@@ -29,3 +29,9 @@ mybatis-plus:
 jwt:
   secret: employee-system-secret-key-2024-for-jwt-token-generation
   expiration: 86400000 
+
+app:
+  admin:
+    username: ${APP_ADMIN_USERNAME:admin}
+    password: ${APP_ADMIN_PASSWORD:admin123}
+    real-name: ${APP_ADMIN_REAL_NAME:系统管理员}
