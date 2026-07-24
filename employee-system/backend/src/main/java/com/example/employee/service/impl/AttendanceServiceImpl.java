@@ -14,9 +14,17 @@ import org.springframework.stereotype.Service;
 public class AttendanceServiceImpl extends ServiceImpl<AttendanceMapper, Attendance> implements AttendanceService {
 
     @Override
-    public IPage<Attendance> getAttendanceList(Integer page, Integer pageSize, String keyword) {
+    public IPage<Attendance> getAttendanceList(Integer page, Integer pageSize, String keyword, Long employeeId, String month) {
         Page<Attendance> pageParam = new Page<>(page, pageSize);
         LambdaQueryWrapper<Attendance> wrapper = new LambdaQueryWrapper<>();
+
+        if (employeeId != null) {
+            wrapper.eq(Attendance::getEmployeeId, employeeId);
+        }
+
+        if (StringUtils.isNotBlank(month)) {
+            wrapper.apply("DATE_FORMAT(date, '%Y-%m') = {0}", month);
+        }
         
         if (StringUtils.isNotBlank(keyword)) {
             wrapper.and(w -> w

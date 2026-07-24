@@ -44,12 +44,17 @@ const updateTime = () => {
   currentTime.value = new Date().toLocaleTimeString('zh-CN', { hour12: false })
 }
 
+const getAttendancePayload = () => ({
+  employeeId: authStore.userId,
+  employeeName: authStore.realName
+})
+
 const loadData = async () => {
   if (!ensureLogin()) return
   loading.value = true
   try {
     const [attendance, announcementPage, leavePage] = await Promise.all([
-      attendanceApi.getToday(),
+      attendanceApi.getToday({ employeeId: authStore.userId }),
       announcementApi.getList({ current: 1, size: 5 }),
       leaveApi.getList({ current: 1, size: 3, status: 'PENDING' })
     ])
@@ -66,7 +71,7 @@ const loadData = async () => {
 
 const handleCheckIn = async () => {
   try {
-    todayAttendance.value = await attendanceApi.checkIn()
+    todayAttendance.value = await attendanceApi.checkIn(getAttendancePayload())
     uni.showToast({ title: '签到成功', icon: 'success' })
   } catch (error) {
     console.error('[Home] Check in error:', error)
@@ -75,7 +80,7 @@ const handleCheckIn = async () => {
 
 const handleCheckOut = async () => {
   try {
-    todayAttendance.value = await attendanceApi.checkOut()
+    todayAttendance.value = await attendanceApi.checkOut(getAttendancePayload())
     uni.showToast({ title: '签退成功', icon: 'success' })
   } catch (error) {
     console.error('[Home] Check out error:', error)

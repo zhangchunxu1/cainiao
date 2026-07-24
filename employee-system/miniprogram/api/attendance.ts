@@ -7,9 +7,9 @@ export const attendanceApi = {
     return get<PageResult<Attendance>>('/attendance', params)
   },
   
-  getToday: () => {
+  getToday: (params?: Record<string, any>) => {
     console.log('[Attendance] Get today attendance')
-    return get<Attendance>('/attendance/today')
+    return get<Attendance>('/attendance/today', params)
   },
   
   checkIn: (data?: Record<string, any>) => {

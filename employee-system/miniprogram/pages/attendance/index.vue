@@ -53,6 +53,11 @@ const updateTime = () => {
   currentTime.value = new Date().toLocaleTimeString('zh-CN', { hour12: false })
 }
 
+const getAttendancePayload = () => ({
+  employeeId: authStore.userId,
+  employeeName: authStore.realName
+})
+
 const loadData = async () => {
   if (!ensureLogin()) return
   loading.value = true
@@ -80,7 +85,7 @@ const shiftMonth = (offset: number) => {
 
 const handleCheckIn = async () => {
   try {
-    await attendanceApi.checkIn()
+    await attendanceApi.checkIn(getAttendancePayload())
     uni.showToast({ title: '签到成功', icon: 'success' })
     loadData()
   } catch (error) {
@@ -90,7 +95,7 @@ const handleCheckIn = async () => {
 
 const handleCheckOut = async () => {
   try {
-    await attendanceApi.checkOut()
+    await attendanceApi.checkOut(getAttendancePayload())
     uni.showToast({ title: '签退成功', icon: 'success' })
     loadData()
   } catch (error) {

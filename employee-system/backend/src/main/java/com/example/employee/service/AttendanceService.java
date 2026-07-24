@@ -6,5 +6,5 @@ import com.example.employee.entity.Attendance;
 
 public interface AttendanceService extends IService<Attendance> {
     
-    IPage<Attendance> getAttendanceList(Integer page, Integer pageSize, String keyword);
+    IPage<Attendance> getAttendanceList(Integer page, Integer pageSize, String keyword, Long employeeId, String month);
 }
