@@ -24,9 +24,6 @@ const handleSubmit = async () => {
   submitting.value = true
   try {
     await reimbursementApi.create({
-      employeeId: authStore.userId,
-      employeeName: authStore.realName,
-      department: authStore.department,
       type: type.value,
       amount: Number(amount.value),
       reason: reason.value.trim()

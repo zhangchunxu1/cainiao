@@ -41,9 +41,6 @@ const handleSubmit = async () => {
   submitting.value = true
   try {
     await leaveApi.submit({
-      employeeId: authStore.userId,
-      employeeName: authStore.realName,
-      department: authStore.department,
       leaveType: leaveType.value,
       startDate: startDate.value,
       endDate: endDate.value,

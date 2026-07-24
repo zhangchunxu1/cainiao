@@ -18,11 +18,8 @@ const handleSubmit = async () => {
   submitting.value = true
   try {
     await dailyReportApi.submit({
-      employeeId: authStore.userId,
-      employeeName: authStore.realName,
-      department: authStore.department,
       reportDate: reportDate.value,
-      content: content.value.trim()
+      todayWork: content.value.trim()
     })
     uni.showToast({ title: '提交成功', icon: 'success' })
     setTimeout(() => uni.navigateBack(), 800)

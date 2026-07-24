@@ -63,24 +63,36 @@ public class AttendanceController {
 
     @ApiOperation("根据ID获取考勤详情")
     @GetMapping("/{id}")
-    public Result<Attendance> getAttendanceById(@PathVariable Long id) {
+    public Result<Attendance> getAttendanceById(@PathVariable Long id, HttpServletRequest request) {
         Attendance attendance = attendanceService.getById(id);
         if (attendance == null) {
             return Result.error("考勤记录不存在");
+        }
+        User currentUser = currentUserService.requireUser(request);
+        if (!currentUserService.canAccessEmployee(currentUser, attendance.getEmployeeId())) {
+            return Result.error("没有权限查看该考勤记录");
         }
         return Result.success(attendance);
     }
 
     @ApiOperation("添加考勤记录")
     @PostMapping
-    public Result<Attendance> addAttendance(@Valid @RequestBody Attendance attendance) {
+    public Result<Attendance> addAttendance(@Valid @RequestBody Attendance attendance, HttpServletRequest request) {
+        User currentUser = currentUserService.requireUser(request);
+        if (!currentUserService.isAdmin(currentUser)) {
+            return Result.error("只有管理员可以手动添加考勤记录");
+        }
         boolean success = attendanceService.save(attendance);
         return success ? Result.success(attendance) : Result.error("添加失败");
     }
 
     @ApiOperation("更新考勤记录")
     @PutMapping("/{id}")
-    public Result<Attendance> updateAttendance(@PathVariable Long id, @Valid @RequestBody Attendance attendance) {
+    public Result<Attendance> updateAttendance(@PathVariable Long id, @Valid @RequestBody Attendance attendance, HttpServletRequest request) {
+        User currentUser = currentUserService.requireUser(request);
+        if (!currentUserService.isAdmin(currentUser)) {
+            return Result.error("只有管理员可以修改考勤记录");
+        }
         attendance.setId(id);
         boolean success = attendanceService.updateById(attendance);
         return success ? Result.success(attendance) : Result.error("更新失败");
@@ -88,14 +100,22 @@ public class AttendanceController {
 
     @ApiOperation("删除考勤记录")
     @DeleteMapping("/{id}")
-    public Result<Boolean> deleteAttendance(@PathVariable Long id) {
+    public Result<Boolean> deleteAttendance(@PathVariable Long id, HttpServletRequest request) {
+        User currentUser = currentUserService.requireUser(request);
+        if (!currentUserService.isAdmin(currentUser)) {
+            return Result.error("只有管理员可以删除考勤记录");
+        }
         boolean success = attendanceService.removeById(id);
         return success ? Result.success(true) : Result.error("删除失败");
     }
 
     @ApiOperation("清理所有考勤数据")
     @DeleteMapping("/clear")
-    public Result<Boolean> clearAllAttendance() {
+    public Result<Boolean> clearAllAttendance(HttpServletRequest request) {
+        User currentUser = currentUserService.requireUser(request);
+        if (!currentUserService.isAdmin(currentUser)) {
+            return Result.error("只有管理员可以清理考勤数据");
+        }
         attendanceService.remove(null);
         return Result.success(true);
     }
