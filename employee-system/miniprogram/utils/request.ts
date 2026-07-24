@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
+const BASE_URL = 'http://192.168.31.139:8080'
 
 export interface RequestOptions {
   url: string
@@ -32,8 +32,11 @@ const request = <T = any>(options: RequestOptions): Promise<T> => {
       uni.showLoading({ title: '加载中...' })
     }
     
+    const requestUrl = BASE_URL + options.url
+    console.log('[Request] URL:', requestUrl)
+    
     uni.request({
-      url: BASE_URL + options.url,
+      url: requestUrl,
       method: options.method || 'GET',
       data: options.data,
       header,
