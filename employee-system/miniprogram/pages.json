@@ -1,0 +1,116 @@
+{
+  "pages": [
+    {
+      "path": "pages/home/index",
+      "style": {
+        "navigationBarTitleText": "首页",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/attendance/index",
+      "style": {
+        "navigationBarTitleText": "考勤",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/apply/index",
+      "style": {
+        "navigationBarTitleText": "申请",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/mine/index",
+      "style": {
+        "navigationBarTitleText": "我的"
+      }
+    },
+    {
+      "path": "pages/login/index",
+      "style": {
+        "navigationBarTitleText": "登录",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/leave/apply",
+      "style": {
+        "navigationBarTitleText": "请假申请"
+      }
+    },
+    {
+      "path": "pages/leave/detail",
+      "style": {
+        "navigationBarTitleText": "请假详情"
+      }
+    },
+    {
+      "path": "pages/reimbursement/apply",
+      "style": {
+        "navigationBarTitleText": "报销申请"
+      }
+    },
+    {
+      "path": "pages/reimbursement/detail",
+      "style": {
+        "navigationBarTitleText": "报销详情"
+      }
+    },
+    {
+      "path": "pages/dailyReport/submit",
+      "style": {
+        "navigationBarTitleText": "提交日报"
+      }
+    },
+    {
+      "path": "pages/dailyReport/detail",
+      "style": {
+        "navigationBarTitleText": "日报详情"
+      }
+    },
+    {
+      "path": "pages/announcement/detail",
+      "style": {
+        "navigationBarTitleText": "公告详情"
+      }
+    },
+    {
+      "path": "pages/salary/detail",
+      "style": {
+        "navigationBarTitleText": "工资条"
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "员工管理系统",
+    "navigationBarBackgroundColor": "#1677ff",
+    "backgroundColor": "#f5f7fa"
+  },
+  "tabBar": {
+    "color": "#86909c",
+    "selectedColor": "#1677ff",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/home/index",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/attendance/index",
+        "text": "考勤"
+      },
+      {
+        "pagePath": "pages/apply/index",
+        "text": "申请"
+      },
+      {
+        "pagePath": "pages/mine/index",
+        "text": "我的"
+      }
+    ]
+  }
+}
