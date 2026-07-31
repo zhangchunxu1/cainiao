@@ -98,6 +98,23 @@ public class AttendanceController {
         return success ? Result.success(attendance) : Result.error("更新失败");
     }
 
+    @ApiOperation("批量删除考勤记录")
+    @DeleteMapping("/batch")
+    public Result<Integer> batchDeleteAttendance(@RequestBody java.util.List<Long> ids, HttpServletRequest request) {
+        if (ids == null || ids.isEmpty()) {
+            return Result.error("请选择要删除的记录");
+        }
+        User currentUser = currentUserService.requireUser(request);
+        if (!currentUserService.isAdmin(currentUser)) {
+            return Result.error("只有管理员可以删除考勤记录");
+        }
+        boolean success = attendanceService.removeByIds(ids);
+        if (success) {
+            return Result.success(ids.size());
+        }
+        return Result.error("批量删除失败");
+    }
+
     @ApiOperation("删除考勤记录")
     @DeleteMapping("/{id}")
     public Result<Boolean> deleteAttendance(@PathVariable Long id, HttpServletRequest request) {

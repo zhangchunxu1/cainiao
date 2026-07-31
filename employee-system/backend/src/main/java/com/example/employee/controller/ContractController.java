@@ -72,6 +72,19 @@ public class ContractController {
         return Result.error("更新失败");
     }
 
+    @ApiOperation("批量删除合同")
+    @DeleteMapping("/batch")
+    public Result<Integer> batchDeleteContract(@RequestBody java.util.List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Result.error("请选择要删除的记录");
+        }
+        boolean success = contractService.removeByIds(ids);
+        if (success) {
+            return Result.success(ids.size());
+        }
+        return Result.error("批量删除失败");
+    }
+
     @ApiOperation("删除合同")
     @DeleteMapping("/{id}")
     public Result<Boolean> deleteContract(@PathVariable Long id) {

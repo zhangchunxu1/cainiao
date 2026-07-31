@@ -10,6 +10,17 @@
         <p class="page-subtitle">管理和查看所有员工信息</p>
       </div>
       <div class="header-right">
+        <a-button
+          v-if="selectedRowKeys.length > 0"
+          danger
+          size="large"
+          :loading="batchDeleteLoading"
+          @click="handleBatchDelete"
+          class="batch-delete-button"
+        >
+          <DeleteOutlined />
+          批量删除 ({{ selectedRowKeys.length }})
+        </a-button>
         <a-button type="primary" @click="$router.push('/employees/add')" class="add-button" size="large">
           <PlusOutlined />
           添加员工
@@ -73,6 +84,7 @@
         :pagination="false"
         class="employee-table"
         :locale="{ emptyText: '暂无员工数据' }"
+        :rowSelection="rowSelection"
       >
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'action'">
@@ -176,7 +188,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { message } from 'ant-design-vue';
+import { message, Modal } from 'ant-design-vue';
 import {
   TeamOutlined,
   PlusOutlined,
@@ -213,6 +225,15 @@ const pageSize = computed({
 });
 
 const searchKeyword = ref('');
+const selectedRowKeys = ref([]);
+const batchDeleteLoading = ref(false);
+
+const rowSelection = computed(() => ({
+  selectedRowKeys: selectedRowKeys.value,
+  onChange: (keys) => {
+    selectedRowKeys.value = keys;
+  }
+}));
 
 const columns = [
   {
@@ -356,10 +377,33 @@ const handleDelete = async (record) => {
     const success = await employeeStore.removeEmployee(record.id);
     if (success) {
       message.success('✅ 删除成功');
+      selectedRowKeys.value = [];
     }
   } catch (error) {
     message.error('❌ 删除失败');
   }
+};
+
+const handleBatchDelete = () => {
+  Modal.confirm({
+    title: '确认批量删除',
+    content: `确定要删除选中的 ${selectedRowKeys.value.length} 条员工记录吗？此操作不可恢复。`,
+    okText: '确定删除',
+    okType: 'danger',
+    cancelText: '取消',
+    async onOk() {
+      batchDeleteLoading.value = true;
+      try {
+        const count = await employeeStore.batchRemoveEmployees(selectedRowKeys.value);
+        message.success(`✅ 成功删除 ${count} 条记录`);
+        selectedRowKeys.value = [];
+      } catch (error) {
+        message.error(error.message || '❌ 批量删除失败');
+      } finally {
+        batchDeleteLoading.value = false;
+      }
+    }
+  });
 };
 
 const formatDate = (date) => {

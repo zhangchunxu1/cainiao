@@ -22,6 +22,9 @@
             />
           </a-form-item>
           <a-form-item>
+            <a-button v-if="selectedRowKeys.length > 0" danger @click="handleBatchDelete" :loading="batchDeleteLoading">
+              <DeleteOutlined /> 批量删除 ({{ selectedRowKeys.length }})
+            </a-button>
             <a-button type="primary" @click="handleSearch">
               <SearchOutlined /> 查询
             </a-button>
@@ -41,6 +44,7 @@
         :pagination="pagination"
         :loading="loading"
         row-key="id"
+        :rowSelection="rowSelection"
         scroll="{ x: 1200 }"
       >
         <template #bodyCell="{ column, record }">
@@ -236,7 +240,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { message } from 'ant-design-vue'
+import { message, Modal } from 'ant-design-vue'
 import {
   UserOutlined,
   SearchOutlined,
@@ -253,6 +257,15 @@ import { getEmployees } from '../../api/employee'
 const authStore = useAuthStore()
 
 const loading = ref(false)
+const selectedRowKeys = ref([])
+const batchDeleteLoading = ref(false)
+
+const rowSelection = computed(() => ({
+  selectedRowKeys: selectedRowKeys.value,
+  onChange: (keys) => {
+    selectedRowKeys.value = keys
+  }
+}))
 const searchForm = reactive({
   keyword: '',
   payMonth: null
@@ -573,6 +586,33 @@ async function handleDelete(record) {
     console.error('删除工资条失败:', error)
   }
 }
+
+const handleBatchDelete = () => {
+  Modal.confirm({
+    title: '确认批量删除',
+    content: `确定要删除选中的 ${selectedRowKeys.value.length} 条工资条记录吗？此操作不可恢复。`,
+    okText: '确定删除',
+    okType: 'danger',
+    cancelText: '取消',
+    async onOk() {
+      batchDeleteLoading.value = true;
+      try {
+        const res = await salaryApi.batchDeleteSalarySlips(selectedRowKeys.value);
+        if (res.data.success) {
+          message.success(`✅ 成功删除 ${res.data.data} 条记录`);
+          selectedRowKeys.value = [];
+          await fetchSalarySlips();
+        } else {
+          message.error(res.data.message || '批量删除失败');
+        }
+      } catch (error) {
+        message.error(error.message || '❌ 批量删除失败');
+      } finally {
+        batchDeleteLoading.value = false;
+      }
+    }
+  });
+};
 
 function formatMonth(date) {
   if (!date) return ''

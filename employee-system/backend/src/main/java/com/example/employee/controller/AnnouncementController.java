@@ -61,6 +61,19 @@ public class AnnouncementController {
         return Result.error("更新失败");
     }
 
+    @ApiOperation("批量删除公告")
+    @DeleteMapping("/batch")
+    public Result<Integer> batchDeleteAnnouncement(@RequestBody java.util.List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Result.error("请选择要删除的记录");
+        }
+        boolean success = announcementService.removeByIds(ids);
+        if (success) {
+            return Result.success(ids.size());
+        }
+        return Result.error("批量删除失败");
+    }
+
     @ApiOperation("删除公告")
     @DeleteMapping("/{id}")
     public Result<Boolean> deleteAnnouncement(@PathVariable Long id) {

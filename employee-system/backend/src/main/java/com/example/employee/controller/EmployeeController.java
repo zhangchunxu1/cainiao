@@ -63,6 +63,29 @@ public class EmployeeController {
         return Result.error("更新员工失败");
     }
 
+    @ApiOperation("批量删除员工")
+    @DeleteMapping("/batch")
+    public Result<Integer> batchDeleteEmployee(@RequestBody java.util.List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Result.error("请选择要删除的记录");
+        }
+        int deletedCount = 0;
+        for (Long id : ids) {
+            Employee employee = employeeService.getById(id);
+            if (employee == null || employee.getDeleted() == 1) {
+                continue;
+            }
+            employee.setDeleted(1);
+            if (employeeService.updateById(employee)) {
+                deletedCount++;
+            }
+        }
+        if (deletedCount > 0) {
+            return Result.success(deletedCount);
+        }
+        return Result.error("批量删除失败");
+    }
+
     @ApiOperation("删除员工")
     @DeleteMapping("/{id}")
     public Result<Boolean> deleteEmployee(@ApiParam(value = "员工ID", required = true) @PathVariable Long id) {

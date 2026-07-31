@@ -116,6 +116,39 @@ public class ReimbursementController {
         return Result.error("更新报销失败");
     }
 
+    @ApiOperation("批量删除报销")
+    @DeleteMapping("/batch")
+    public Result<Integer> batchDeleteReimbursement(@RequestBody java.util.List<Long> ids, HttpServletRequest request) {
+        if (ids == null || ids.isEmpty()) {
+            return Result.error("请选择要删除的记录");
+        }
+        User currentUser = currentUserService.requireUser(request);
+        int deletedCount = 0;
+        java.util.List<String> errors = new java.util.ArrayList<>();
+        for (Long id : ids) {
+            Reimbursement reimbursement = reimbursementService.getById(id);
+            if (reimbursement == null || reimbursement.getDeleted() == 1) {
+                continue;
+            }
+            if (!currentUserService.canAccessEmployee(currentUser, reimbursement.getEmployeeId())) {
+                errors.add("报销" + id + "：没有权限删除");
+                continue;
+            }
+            if (!currentUserService.isAdmin(currentUser) && !"待审批".equals(reimbursement.getStatus())) {
+                errors.add("报销" + id + "：非管理员只能删除待审批的记录");
+                continue;
+            }
+            reimbursement.setDeleted(1);
+            if (reimbursementService.updateById(reimbursement)) {
+                deletedCount++;
+            }
+        }
+        if (deletedCount > 0) {
+            return Result.success(deletedCount);
+        }
+        return Result.error(errors.isEmpty() ? "批量删除失败" : String.join("；", errors));
+    }
+
     @ApiOperation("删除报销")
     @DeleteMapping("/{id}")
     public Result<Boolean> deleteReimbursement(

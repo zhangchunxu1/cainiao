@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { getEmployees, getEmployeeById, addEmployee, updateEmployee, deleteEmployee } from '../api/employee'
+import { getEmployees, getEmployeeById, addEmployee, updateEmployee, deleteEmployee, batchDeleteEmployees } from '../api/employee'
 
 export const useEmployeeStore = defineStore('employee', {
   state: () => ({
@@ -132,6 +132,28 @@ export const useEmployeeStore = defineStore('employee', {
         this.error = error.message || '删除员工失败'
         console.error('删除员工失败:', error)
         return false
+      } finally {
+        this.loading = false
+      }
+    },
+    
+    async batchRemoveEmployees(ids) {
+      this.loading = true
+      try {
+        const res = await batchDeleteEmployees(ids)
+        if (res.data.success && res.data.code === 200) {
+          await this.fetchEmployees({
+            current: this.employees.current,
+            size: this.employees.size
+          })
+          return res.data.data
+        } else {
+          throw new Error(res.data.message || '批量删除失败')
+        }
+      } catch (error) {
+        this.error = error.message || '批量删除员工失败'
+        console.error('批量删除员工失败:', error)
+        throw error
       } finally {
         this.loading = false
       }

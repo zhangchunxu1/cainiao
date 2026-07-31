@@ -94,6 +94,33 @@ public class UserController {
         return Result.error("更新失败");
     }
 
+    @ApiOperation("批量删除用户")
+    @DeleteMapping("/batch")
+    public Result<Integer> batchDeleteUser(@RequestBody java.util.List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Result.error("请选择要删除的记录");
+        }
+        int deletedCount = 0;
+        java.util.List<String> errors = new java.util.ArrayList<>();
+        for (Long id : ids) {
+            User user = userService.getById(id);
+            if (user == null) {
+                continue;
+            }
+            if (isProtectedAdmin(user)) {
+                errors.add("用户" + user.getUsername() + "：不能删除管理员账号");
+                continue;
+            }
+            if (userService.removeById(id)) {
+                deletedCount++;
+            }
+        }
+        if (deletedCount > 0) {
+            return Result.success(deletedCount);
+        }
+        return Result.error(errors.isEmpty() ? "批量删除失败" : String.join("；", errors));
+    }
+
     @ApiOperation("删除用户")
     @DeleteMapping("/{id}")
     public Result<Boolean> deleteUser(@PathVariable Long id) {

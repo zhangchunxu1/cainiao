@@ -24,6 +24,9 @@
             <a-button type="primary" style="margin-left: 8px" @click="handleAdd">
               <PlusOutlined /> 添加
             </a-button>
+            <a-button v-if="selectedRowKeys.length > 0" danger style="margin-left: 8px" @click="handleBatchDelete" :loading="batchDeleteLoading">
+              <DeleteOutlined /> 批量删除 ({{ selectedRowKeys.length }})
+            </a-button>
           </a-form-item>
         </a-form>
       </div>
@@ -33,6 +36,7 @@
         :data-source="reimbursementList"
         :pagination="pagination"
         :loading="loading"
+        :rowSelection="rowSelection"
         row-key="id"
         @change="handleTableChange"
       >
@@ -185,7 +189,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { message, Modal } from 'ant-design-vue'
 import {
   UserOutlined,
@@ -212,6 +216,8 @@ const isEdit = ref(false)
 const currentReimbursement = ref(null)
 const currentApproveType = ref('')
 const employeeOptions = ref([])
+const selectedRowKeys = ref([])
+const batchDeleteLoading = ref(false)
 
 const searchForm = reactive({
   keyword: ''
@@ -439,6 +445,40 @@ function handleDelete(record) {
         }
       } catch (error) {
         message.error(error.message || '删除失败')
+      }
+    }
+  })
+}
+
+const rowSelection = computed(() => ({
+  selectedRowKeys: selectedRowKeys.value,
+  onChange: (keys) => {
+    selectedRowKeys.value = keys
+  }
+}))
+
+const handleBatchDelete = () => {
+  Modal.confirm({
+    title: '确认批量删除',
+    content: `确定要删除选中的 ${selectedRowKeys.value.length} 条报销记录吗？此操作不可恢复。`,
+    okText: '确定删除',
+    okType: 'danger',
+    cancelText: '取消',
+    async onOk() {
+      batchDeleteLoading.value = true
+      try {
+        const res = await reimbursementApi.batchDeleteReimbursements(selectedRowKeys.value)
+        if (res.data.success) {
+          message.success(`✅ 成功删除 ${res.data.data} 条记录`)
+          selectedRowKeys.value = []
+          await fetchReimbursements()
+        } else {
+          message.error(res.data.message || '批量删除失败')
+        }
+      } catch (error) {
+        message.error(error.message || '❌ 批量删除失败')
+      } finally {
+        batchDeleteLoading.value = false
       }
     }
   })

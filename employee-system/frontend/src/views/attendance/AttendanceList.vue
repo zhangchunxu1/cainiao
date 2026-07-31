@@ -10,6 +10,16 @@
         <p class="page-subtitle">记录和管理员工考勤信息</p>
       </div>
       <div class="header-right">
+        <a-button
+          v-if="selectedRowKeys.length > 0"
+          danger
+          size="large"
+          @click="handleBatchDelete"
+          :loading="batchDeleteLoading"
+        >
+          <DeleteOutlined />
+          批量删除 ({{ selectedRowKeys.length }})
+        </a-button>
         <a-button type="primary" @click="handleCheckIn" size="large" :loading="checkInLoading">
           <LoginOutlined />
           签到
@@ -116,6 +126,7 @@
         rowKey="id"
         :pagination="false"
         :scroll="{ x: 900 }"
+        :rowSelection="rowSelection"
       >
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'status'">
@@ -149,8 +160,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { message } from 'ant-design-vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { message, Modal } from 'ant-design-vue'
 import {
   ClockCircleOutlined,
   LoginOutlined,
@@ -165,6 +176,8 @@ import { useAuthStore } from '../../store/auth'
 const loading = ref(false)
 const checkInLoading = ref(false)
 const checkOutLoading = ref(false)
+const selectedRowKeys = ref([])
+const batchDeleteLoading = ref(false)
 
 const searchKeyword = ref('')
 const dateRange = ref([])
@@ -179,6 +192,11 @@ const todayCheckOut = ref('')
 let timeInterval = null
 
 const authStore = useAuthStore()
+
+const rowSelection = computed(() => ({
+  selectedRowKeys: selectedRowKeys.value,
+  onChange: (keys) => { selectedRowKeys.value = keys }
+}))
 
 const columns = [
   {
@@ -318,6 +336,33 @@ const handleClearAll = async () => {
     message.error(error.message || '清空失败')
   }
 }
+
+const handleBatchDelete = () => {
+  Modal.confirm({
+    title: '确认批量删除',
+    content: `确定要删除选中的 ${selectedRowKeys.value.length} 条考勤记录吗？此操作不可恢复。`,
+    okText: '确定删除',
+    okType: 'danger',
+    cancelText: '取消',
+    async onOk() {
+      batchDeleteLoading.value = true;
+      try {
+        const res = await attendanceApi.batchDeleteAttendance(selectedRowKeys.value);
+        if (res.data.success) {
+          message.success(`成功删除 ${res.data.data} 条记录`);
+          selectedRowKeys.value = [];
+          await fetchAttendance();
+        } else {
+          message.error(res.data.message || '批量删除失败');
+        }
+      } catch (error) {
+        message.error(error.message || '批量删除失败');
+      } finally {
+        batchDeleteLoading.value = false;
+      }
+    }
+  });
+};
 
 const handleSearch = () => {
   currentPage.value = 1

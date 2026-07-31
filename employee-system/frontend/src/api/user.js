@@ -6,5 +6,6 @@ export const userApi = {
   addUser: (data) => api.post('/users', data),
   updateUser: (id, data) => api.put(`/users/${id}`, data),
   deleteUser: (id) => api.delete(`/users/${id}`),
+  batchDeleteUsers: (ids) => api.delete('/users/batch', { data: ids }),
   resetPassword: (id) => api.put(`/users/${id}/reset-password`)
 }

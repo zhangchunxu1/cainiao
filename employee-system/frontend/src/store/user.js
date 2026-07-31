@@ -85,6 +85,23 @@ export const useUserStore = defineStore('userManage', {
       } catch (error) {
         throw error
       }
+    },
+
+    async batchRemoveUsers(ids) {
+      this.loading = true
+      try {
+        const res = await userApi.batchDeleteUsers(ids)
+        if (res.data.success && res.data.code === 200) {
+          await this.fetchUsers({ page: this.users.current, pageSize: this.users.size })
+          return res.data.data
+        }
+        throw new Error(res.data.message || '批量删除失败')
+      } catch (error) {
+        this.error = error.message || '批量删除用户失败'
+        throw error
+      } finally {
+        this.loading = false
+      }
     }
   }
 })

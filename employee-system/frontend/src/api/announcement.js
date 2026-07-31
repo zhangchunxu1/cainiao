@@ -5,5 +5,6 @@ export const announcementApi = {
   getAnnouncementById: (id) => api.get(`/announcements/${id}`),
   addAnnouncement: (data) => api.post('/announcements', data),
   updateAnnouncement: (id, data) => api.put(`/announcements/${id}`, data),
-  deleteAnnouncement: (id) => api.delete(`/announcements/${id}`)
+  deleteAnnouncement: (id) => api.delete(`/announcements/${id}`),
+  batchDeleteAnnouncements: (ids) => api.delete('/announcements/batch', { data: ids })
 }

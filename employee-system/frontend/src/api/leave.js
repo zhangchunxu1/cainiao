@@ -6,5 +6,6 @@ export const leaveRequestApi = {
   submitLeaveRequest: (data) => api.post('/leaves', data),
   approveLeave: (id, data) => api.put(`/leaves/${id}/approve`, data),
   rejectLeave: (id, data) => api.put(`/leaves/${id}/reject`, data),
-  deleteLeaveRequest: (id) => api.delete(`/leaves/${id}`)
+  deleteLeaveRequest: (id) => api.delete(`/leaves/${id}`),
+  batchDeleteLeaveRequests: (ids) => api.delete('/leaves/batch', { data: ids })
 }

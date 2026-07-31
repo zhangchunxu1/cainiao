@@ -79,6 +79,29 @@ public class SalarySlipController {
         return Result.success(updated);
     }
 
+    @DeleteMapping("/batch")
+    @Operation(summary = "批量删除工资条")
+    public Result<Integer> batchDeleteSalarySlip(@RequestBody java.util.List<Long> ids, HttpServletRequest request) {
+        if (ids == null || ids.isEmpty()) {
+            return Result.error("请选择要删除的记录");
+        }
+        User currentUser = currentUserService.requireUser(request);
+        if (!currentUserService.isAdmin(currentUser)) {
+            return Result.error("只有管理员可以删除工资条");
+        }
+        int deletedCount = 0;
+        for (Long id : ids) {
+            boolean deleted = salarySlipService.deleteSalarySlip(id);
+            if (deleted) {
+                deletedCount++;
+            }
+        }
+        if (deletedCount > 0) {
+            return Result.success(deletedCount);
+        }
+        return Result.error("批量删除失败");
+    }
+
     @DeleteMapping("/{id}")
     @Operation(summary = "删除工资条")
     public Result<Boolean> deleteSalarySlip(@PathVariable Long id, HttpServletRequest request) {

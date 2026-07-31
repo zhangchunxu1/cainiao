@@ -10,6 +10,9 @@
         <p class="page-subtitle">管理和查看所有部门信息</p>
       </div>
       <div class="header-right">
+        <a-button v-if="selectedRowKeys.length > 0" danger @click="handleBatchDelete" :loading="batchDeleteLoading" size="large">
+          <DeleteOutlined /> 批量删除 ({{ selectedRowKeys.length }})
+        </a-button>
         <a-button type="primary" @click="showAddModal" size="large">
           <PlusOutlined />
           添加部门
@@ -61,6 +64,7 @@
         rowKey="id"
         :pagination="false"
         :scroll="{ x: 900 }"
+        :rowSelection="rowSelection"
       >
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'action'">
@@ -162,7 +166,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
-import { message } from 'ant-design-vue'
+import { message, Modal } from 'ant-design-vue'
 import {
   ApartmentOutlined,
   PlusOutlined,
@@ -178,6 +182,8 @@ const submitLoading = ref(false)
 const modalVisible = ref(false)
 const isEdit = ref(false)
 const currentId = ref(null)
+const selectedRowKeys = ref([])
+const batchDeleteLoading = ref(false)
 
 const searchKeyword = ref('')
 const currentPage = ref(1)
@@ -200,6 +206,11 @@ const formRules = {
 }
 
 const modalTitle = computed(() => isEdit.value ? '编辑部门' : '添加部门')
+
+const rowSelection = computed(() => ({
+  selectedRowKeys: selectedRowKeys.value,
+  onChange: (keys) => { selectedRowKeys.value = keys }
+}))
 
 const columns = [
   {
@@ -354,6 +365,33 @@ const handleDelete = async (record) => {
     message.error(error.message || '删除失败')
   }
 }
+
+const handleBatchDelete = () => {
+  Modal.confirm({
+    title: '确认批量删除',
+    content: `确定要删除选中的 ${selectedRowKeys.value.length} 条部门记录吗？此操作不可恢复。`,
+    okText: '确定删除',
+    okType: 'danger',
+    cancelText: '取消',
+    async onOk() {
+      batchDeleteLoading.value = true;
+      try {
+        const res = await departmentApi.batchDeleteDepartments(selectedRowKeys.value);
+        if (res.data.success) {
+          message.success(`✅ 成功删除 ${res.data.data} 条记录`);
+          selectedRowKeys.value = [];
+          await fetchDepartments();
+        } else {
+          message.error(res.data.message || '批量删除失败');
+        }
+      } catch (error) {
+        message.error(error.message || '❌ 批量删除失败');
+      } finally {
+        batchDeleteLoading.value = false;
+      }
+    }
+  });
+};
 
 onMounted(() => {
   fetchDepartments()

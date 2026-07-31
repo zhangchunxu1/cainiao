@@ -46,6 +46,7 @@ export const getReimbursementById = (id) => api.get(`/reimbursements/${id}`)
 export const createReimbursement = (data) => api.post('/reimbursements', data)
 export const updateReimbursement = (id, data) => api.put(`/reimbursements/${id}`, data)
 export const deleteReimbursement = (id) => api.delete(`/reimbursements/${id}`)
+export const batchDeleteReimbursements = (ids) => api.delete('/reimbursements/batch', { data: ids })
 export const managerApprove = (id, data) => api.post(`/reimbursements/${id}/manager-approve`, data)
 export const managerReject = (id, data) => api.post(`/reimbursements/${id}/manager-reject`, data)
 export const financeApprove = (id, data) => api.post(`/reimbursements/${id}/finance-approve`, data)
@@ -57,6 +58,7 @@ export const reimbursementApi = {
   createReimbursement,
   updateReimbursement,
   deleteReimbursement,
+  batchDeleteReimbursements,
   managerApprove,
   managerReject,
   financeApprove,

@@ -9,6 +9,9 @@
         <p class="page-subtitle">管理系统登录账号和角色权限</p>
       </div>
       <div class="header-right">
+        <a-button v-if="selectedRowKeys.length > 0" danger @click="handleBatchDelete" :loading="batchDeleteLoading" size="large" style="margin-right: 12px;">
+          <DeleteOutlined /> 批量删除 ({{ selectedRowKeys.length }})
+        </a-button>
         <a-button type="primary" @click="$router.push('/users/add')" class="add-button" size="large">
           <PlusOutlined />
           添加账号
@@ -66,6 +69,7 @@
         rowKey="id"
         :pagination="false"
         :scroll="{ x: 800 }"
+        :rowSelection="rowSelection"
         class="user-table"
         :locale="{ emptyText: '暂无用户数据' }"
       >
@@ -150,7 +154,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { message } from 'ant-design-vue'
+import { message, Modal } from 'ant-design-vue'
 import {
   UserOutlined,
   PlusOutlined,
@@ -181,6 +185,15 @@ const pageSize = computed({
 })
 
 const searchKeyword = ref('')
+const selectedRowKeys = ref([])
+const batchDeleteLoading = ref(false)
+
+const rowSelection = computed(() => ({
+  selectedRowKeys: selectedRowKeys.value,
+  onChange: (keys) => {
+    selectedRowKeys.value = keys
+  }
+}))
 
 const columns = [
   {
@@ -284,6 +297,28 @@ const handleResetPassword = async (record) => {
     message.error('重置失败')
   }
 }
+
+const handleBatchDelete = () => {
+  Modal.confirm({
+    title: '确认批量删除',
+    content: `确定要删除选中的 ${selectedRowKeys.value.length} 条用户记录吗？此操作不可恢复。`,
+    okText: '确定删除',
+    okType: 'danger',
+    cancelText: '取消',
+    async onOk() {
+      batchDeleteLoading.value = true;
+      try {
+        const count = await userStore.batchRemoveUsers(selectedRowKeys.value);
+        message.success(`✅ 成功删除 ${count} 条记录`);
+        selectedRowKeys.value = [];
+      } catch (error) {
+        message.error(error.message || '❌ 批量删除失败');
+      } finally {
+        batchDeleteLoading.value = false;
+      }
+    }
+  });
+};
 </script>
 
 <style scoped>

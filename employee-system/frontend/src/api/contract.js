@@ -19,5 +19,9 @@ export const contractApi = {
 
   deleteContract(id) {
     return api.delete(`/contracts/${id}`)
+  },
+
+  batchDeleteContracts(ids) {
+    return api.delete('/contracts/batch', { data: ids })
   }
 }

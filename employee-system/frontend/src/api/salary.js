@@ -5,5 +5,6 @@ export const salaryApi = {
   getSalarySlip: (id) => api.get(`/salary-slips/${id}`),
   createSalarySlip: (data) => api.post('/salary-slips', data),
   updateSalarySlip: (id, data) => api.put(`/salary-slips/${id}`, data),
-  deleteSalarySlip: (id) => api.delete(`/salary-slips/${id}`)
+  deleteSalarySlip: (id) => api.delete(`/salary-slips/${id}`),
+  batchDeleteSalarySlips: (ids) => api.delete('/salary-slips/batch', { data: ids })
 }

@@ -10,6 +10,16 @@
         <p class="page-subtitle">发布和管理公司公告通知</p>
       </div>
       <div class="header-right">
+        <a-button
+          v-if="selectedIds.length > 0"
+          danger
+          size="large"
+          :loading="batchDeleteLoading"
+          @click="handleBatchDelete"
+        >
+          <DeleteOutlined />
+          批量删除 ({{ selectedIds.length }})
+        </a-button>
         <a-button type="primary" @click="showAddModal" size="large">
           <PlusOutlined />
           发布公告
@@ -68,6 +78,10 @@
       >
         <div class="card-header">
           <div class="card-title-area">
+            <a-checkbox
+              :checked="selectedIds.includes(record.id)"
+              @change="(e) => toggleSelect(record.id, e.target.checked)"
+            />
             <a-tag v-if="record.isTop === 1" color="red" class="top-tag">置顶</a-tag>
             <a-tag :color="getTypeColor(record.type)" class="type-tag">{{ record.type }}</a-tag>
             <h3 class="card-title" @click="handleView(record)">{{ record.title }}</h3>
@@ -201,7 +215,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { message } from 'ant-design-vue'
+import { message, Modal } from 'ant-design-vue'
 import {
   NotificationOutlined,
   PlusOutlined,
@@ -223,6 +237,8 @@ const detailVisible = ref(false)
 const isEdit = ref(false)
 const currentId = ref(null)
 const currentRecord = ref(null)
+const selectedIds = ref([])
+const batchDeleteLoading = ref(false)
 
 const searchKeyword = ref('')
 const selectedType = ref(undefined)
@@ -387,10 +403,48 @@ const handleDelete = async (record) => {
   try {
     await announcementApi.deleteAnnouncement(record.id)
     message.success('删除成功')
+    selectedIds.value = selectedIds.value.filter(i => i !== record.id)
     fetchAnnouncements()
   } catch (error) {
     message.error(error.message || '删除失败')
   }
+}
+
+const toggleSelect = (id, checked) => {
+  if (checked) {
+    if (!selectedIds.value.includes(id)) {
+      selectedIds.value.push(id)
+    }
+  } else {
+    selectedIds.value = selectedIds.value.filter(i => i !== id)
+  }
+}
+
+const handleBatchDelete = () => {
+  Modal.confirm({
+    title: '确认批量删除',
+    content: `确定要删除选中的 ${selectedIds.value.length} 条公告记录吗？此操作不可恢复。`,
+    okText: '确定删除',
+    okType: 'danger',
+    cancelText: '取消',
+    async onOk() {
+      batchDeleteLoading.value = true
+      try {
+        const res = await announcementApi.batchDeleteAnnouncements(selectedIds.value)
+        if (res.data.success) {
+          message.success(`✅ 成功删除 ${res.data.data} 条记录`)
+          selectedIds.value = []
+          await fetchAnnouncements()
+        } else {
+          message.error(res.data.message || '批量删除失败')
+        }
+      } catch (error) {
+        message.error(error.message || '❌ 批量删除失败')
+      } finally {
+        batchDeleteLoading.value = false
+      }
+    }
+  })
 }
 
 onMounted(() => {

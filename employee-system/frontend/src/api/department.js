@@ -5,5 +5,6 @@ export const departmentApi = {
   getDepartmentById: (id) => api.get(`/departments/${id}`),
   addDepartment: (data) => api.post('/departments', data),
   updateDepartment: (id, data) => api.put(`/departments/${id}`, data),
-  deleteDepartment: (id) => api.delete(`/departments/${id}`)
+  deleteDepartment: (id) => api.delete(`/departments/${id}`),
+  batchDeleteDepartments: (ids) => api.delete('/departments/batch', { data: ids })
 }

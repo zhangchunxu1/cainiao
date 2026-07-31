@@ -62,6 +62,19 @@ public class DepartmentController {
         return Result.error("更新失败");
     }
 
+    @ApiOperation("批量删除部门")
+    @DeleteMapping("/batch")
+    public Result<Integer> batchDeleteDepartment(@RequestBody java.util.List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Result.error("请选择要删除的记录");
+        }
+        boolean success = departmentService.removeByIds(ids);
+        if (success) {
+            return Result.success(ids.size());
+        }
+        return Result.error("批量删除失败");
+    }
+
     @ApiOperation("删除部门")
     @DeleteMapping("/{id}")
     public Result<Boolean> deleteDepartment(@PathVariable Long id) {

@@ -101,6 +101,38 @@ public class LeaveRequestController {
         return Result.error("更新失败");
     }
 
+    @ApiOperation("批量删除请假记录")
+    @DeleteMapping("/batch")
+    public Result<Integer> batchDeleteLeaveRequest(@RequestBody java.util.List<Long> ids, HttpServletRequest request) {
+        if (ids == null || ids.isEmpty()) {
+            return Result.error("请选择要删除的记录");
+        }
+        User currentUser = currentUserService.requireUser(request);
+        int deletedCount = 0;
+        java.util.List<String> errors = new java.util.ArrayList<>();
+        for (Long id : ids) {
+            LeaveRequest leaveRequest = leaveRequestService.getById(id);
+            if (leaveRequest == null) {
+                continue;
+            }
+            if (!currentUserService.canAccessEmployee(currentUser, leaveRequest.getEmployeeId())) {
+                errors.add("请假记录" + id + "：没有权限删除");
+                continue;
+            }
+            if (!currentUserService.isAdmin(currentUser) && !"待审批".equals(leaveRequest.getStatus())) {
+                errors.add("请假记录" + id + "：非管理员只能删除待审批的记录");
+                continue;
+            }
+            if (leaveRequestService.removeById(id)) {
+                deletedCount++;
+            }
+        }
+        if (deletedCount > 0) {
+            return Result.success(deletedCount);
+        }
+        return Result.error(errors.isEmpty() ? "批量删除失败" : String.join("；", errors));
+    }
+
     @ApiOperation("删除请假记录")
     @DeleteMapping("/{id}")
     public Result<Boolean> deleteLeaveRequest(@PathVariable Long id, HttpServletRequest request) {

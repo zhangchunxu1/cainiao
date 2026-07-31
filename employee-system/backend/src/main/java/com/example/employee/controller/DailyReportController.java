@@ -103,6 +103,38 @@ public class DailyReportController {
         return Result.error("更新失败");
     }
 
+    @ApiOperation("批量删除日报")
+    @DeleteMapping("/batch")
+    public Result<Integer> batchDeleteDailyReport(@RequestBody java.util.List<Long> ids, HttpServletRequest request) {
+        if (ids == null || ids.isEmpty()) {
+            return Result.error("请选择要删除的记录");
+        }
+        User currentUser = currentUserService.requireUser(request);
+        int deletedCount = 0;
+        java.util.List<String> errors = new java.util.ArrayList<>();
+        for (Long id : ids) {
+            DailyReport dailyReport = dailyReportService.getById(id);
+            if (dailyReport == null) {
+                continue;
+            }
+            if (!currentUserService.canAccessEmployee(currentUser, dailyReport.getEmployeeId())) {
+                errors.add("日报" + id + "：没有权限删除");
+                continue;
+            }
+            if (!currentUserService.isAdmin(currentUser) && !"已提交".equals(dailyReport.getStatus())) {
+                errors.add("日报" + id + "：非管理员只能删除未审核的日报");
+                continue;
+            }
+            if (dailyReportService.removeById(id)) {
+                deletedCount++;
+            }
+        }
+        if (deletedCount > 0) {
+            return Result.success(deletedCount);
+        }
+        return Result.error(errors.isEmpty() ? "批量删除失败" : String.join("；", errors));
+    }
+
     @ApiOperation("删除日报")
     @DeleteMapping("/{id}")
     public Result<Boolean> deleteDailyReport(@PathVariable Long id, HttpServletRequest request) {
